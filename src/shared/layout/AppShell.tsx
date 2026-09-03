@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { NotificationInbox } from "@/features/alerts/NotificationInbox";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/shared/session";
 
@@ -23,6 +24,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   function onSignOut() {
     signOut();
+    toast.success("Odhlásený.", { description: "Token je preč z prehliadača." });
     router.replace("/");
   }
 

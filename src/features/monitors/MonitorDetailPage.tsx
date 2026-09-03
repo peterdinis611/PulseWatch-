@@ -10,6 +10,7 @@ import { BackLink } from "@/shared/ui/page-header";
 import { StatusBadge } from "@/shared/ui/status-badge";
 import { formatAgo, formatMs, targetOf } from "@/shared/lib/format";
 import { gql, gqlMessage } from "@/shared/graphql/client";
+import { toast } from "sonner";
 import {
   DELETE_MONITOR,
   MONITOR_QUERY,
@@ -43,8 +44,13 @@ export default function MonitorDetailPage() {
       const data = await gql<{ runMonitorCheck: Monitor }>(RUN_MONITOR, { id });
       setMonitor(data.runMonitorCheck);
       await refresh();
+      toast.success("Kontrola hotová.", {
+        description: data.runMonitorCheck.lastStatus,
+      });
     } catch (err) {
-      setError(gqlMessage(err));
+      const message = gqlMessage(err);
+      setError(message);
+      toast.error("Kontrola zlyhala.", { description: message });
     } finally {
       setBusy(false);
     }
@@ -55,9 +61,12 @@ export default function MonitorDetailPage() {
     try {
       await gql(DELETE_MONITOR, { id });
       await refresh();
+      toast.success("Monitor zmazaný.");
       router.replace("/monitors");
     } catch (err) {
-      setError(gqlMessage(err));
+      const message = gqlMessage(err);
+      setError(message);
+      toast.error("Zmazanie zlyhalo.", { description: message });
       setBusy(false);
     }
   }
@@ -132,8 +141,11 @@ export default function MonitorDetailPage() {
               );
               setMonitor(data.updateMonitor);
               await refresh();
+              toast.success("Monitor uložený.");
             } catch (err) {
-              setError(gqlMessage(err));
+              const message = gqlMessage(err);
+              setError(message);
+              toast.error("Uloženie zlyhalo.", { description: message });
             } finally {
               setBusy(false);
             }

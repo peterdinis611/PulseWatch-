@@ -5,6 +5,7 @@ import { useState } from "react";
 import { MonitorForm } from "@/features/monitors/MonitorForm";
 import { BackLink, PageHeader } from "@/shared/ui/page-header";
 import { gql, gqlMessage } from "@/shared/graphql/client";
+import { toast } from "sonner";
 import { CREATE_MONITOR } from "@/shared/graphql/documents";
 import type { Monitor } from "@/shared/lib/types";
 import { useSession } from "@/shared/session/SessionProvider";
@@ -38,9 +39,12 @@ export default function NewMonitorPage() {
                 { input },
               );
               await refresh();
+              toast.success("Monitor vytvorený.");
               router.replace(`/monitors/${data.createMonitor.id}`);
             } catch (err) {
-              setError(gqlMessage(err));
+              const message = gqlMessage(err);
+              setError(message);
+              toast.error("Vytvorenie zlyhalo.", { description: message });
               setBusy(false);
             }
           }}

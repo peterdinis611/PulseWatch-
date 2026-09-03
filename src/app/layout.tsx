@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Azeret_Mono, Fraunces, Unbounded } from "next/font/google";
 import { SessionProvider } from "@/shared/session/SessionProvider";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import {
   getSiteUrl,
@@ -101,6 +102,7 @@ export default function RootLayout({
     >
       <body>
         <SessionProvider>{children}</SessionProvider>
+        <Toaster />
       </body>
     </html>
   );

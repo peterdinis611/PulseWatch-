@@ -7,11 +7,11 @@ import {
   CheckRow,
   FormError,
   FormField,
-  FormOk,
   FormRow,
 } from "@/shared/ui/form";
 import { PageHeader } from "@/shared/ui/page-header";
 import { gql, gqlMessage, GRAPHQL_HTTP } from "@/shared/graphql/client";
+import { toast } from "sonner";
 import { SETTINGS_QUERY, UPDATE_SETTINGS } from "@/shared/graphql/documents";
 import type { MonitorSettings } from "@/shared/lib/types";
 import { monoClass, noteClass, splitClass } from "@/shared/ui/list";
@@ -24,7 +24,6 @@ export default function SettingsPage() {
   const [notifyOnRecover, setNotifyOnRecover] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     gql<{ monitorSettings: MonitorSettings }>(SETTINGS_QUERY).then((data) => {
@@ -40,7 +39,6 @@ export default function SettingsPage() {
     event.preventDefault();
     setBusy(true);
     setError(null);
-    setSaved(false);
     try {
       const data = await gql<{ updateMonitorSettings: MonitorSettings }>(
         UPDATE_SETTINGS,
@@ -54,9 +52,11 @@ export default function SettingsPage() {
         },
       );
       setSettings(data.updateMonitorSettings);
-      setSaved(true);
+      toast.success("Nastavenia uložené.");
     } catch (err) {
-      setError(gqlMessage(err));
+      const message = gqlMessage(err);
+      setError(message);
+      toast.error("Uloženie zlyhalo.", { description: message });
     } finally {
       setBusy(false);
     }
@@ -72,7 +72,6 @@ export default function SettingsPage() {
       <div className={splitClass()}>
         <form onSubmit={onSubmit}>
           <FormError>{error}</FormError>
-          <FormOk>{saved ? "Uložené." : null}</FormOk>
           <FormRow>
             <FormField label="Default interval s">
               <Input

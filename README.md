@@ -2,37 +2,37 @@
 
 Next.js UI pre PulseWatch — monitoring služieb, SSL a k6 záťaže. Celý stack a backend setup sú v [README v koreni](../README.md).
 
-![Landing](../docs/screenshots/landing.png)
+![Landing](docs/screenshots/landing.png)
 
 ## Náhľad
 
 **Landing a CTA**
 
-![Landing CTA](../docs/screenshots/landing-cta.png)
+![Landing CTA](docs/screenshots/landing-cta.png)
 
 **Prihlásenie**
 
-![Prihlásenie](../docs/screenshots/vstup.png)
+![Prihlásenie](docs/screenshots/vstup.png)
 
 **Prehľad** — konštelácia monitorov.
 
-![Prehľad](../docs/screenshots/desk.png)
+![Prehľad](docs/screenshots/desk.png)
 
 **Monitory**
 
-![Monitory](../docs/screenshots/monitors.png)
+![Monitory](docs/screenshots/monitors.png)
 
 **Záťaž (k6)**
 
-![Záťaž](../docs/screenshots/load.png)
+![Záťaž](docs/screenshots/load.png)
 
 **Upozornenia** — dropdown pri zvončeku.
 
-![Upozornenia](../docs/screenshots/notifications.png)
+![Upozornenia](docs/screenshots/notifications.png)
 
 **Nastavenia**
 
-![Nastavenia](../docs/screenshots/settings.png)
+![Nastavenia](docs/screenshots/settings.png)
 
 ## Spustenie
 

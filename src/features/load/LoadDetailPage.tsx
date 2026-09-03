@@ -15,6 +15,7 @@ import { StatusBadge } from "@/shared/ui/status-badge";
 import { usePoll } from "@/shared/hooks/usePoll";
 import { formatPct, formatWhen } from "@/shared/lib/format";
 import { gql, gqlMessage } from "@/shared/graphql/client";
+import { toast } from "sonner";
 import {
   DELETE_STRESS,
   RUN_STRESS,
@@ -66,8 +67,11 @@ export default function LoadDetailPage() {
       await gql<{ runStressTest: StressTest }>(RUN_STRESS, { id });
       await reload();
       await refresh();
+      toast.success("k6 beží.", { description: "Výsledky prídu, keď dopíše summary." });
     } catch (err) {
-      setError(gqlMessage(err));
+      const message = gqlMessage(err);
+      setError(message);
+      toast.error("Spustenie zlyhalo.", { description: message });
     } finally {
       setBusy(false);
     }
@@ -78,9 +82,12 @@ export default function LoadDetailPage() {
     try {
       await gql(DELETE_STRESS, { id });
       await refresh();
+      toast.success("Scenár zmazaný.");
       router.replace("/load");
     } catch (err) {
-      setError(gqlMessage(err));
+      const message = gqlMessage(err);
+      setError(message);
+      toast.error("Zmazanie zlyhalo.", { description: message });
       setBusy(false);
     }
   }
@@ -176,8 +183,11 @@ export default function LoadDetailPage() {
                 input,
               });
               await reload();
+              toast.success("Scenár uložený.");
             } catch (err) {
-              setError(gqlMessage(err));
+              const message = gqlMessage(err);
+              setError(message);
+              toast.error("Uloženie zlyhalo.", { description: message });
             } finally {
               setBusy(false);
             }
