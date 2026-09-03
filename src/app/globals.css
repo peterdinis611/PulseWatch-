@@ -1,0 +1,161 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root,
+.dark {
+  --background: #07080c;
+  --foreground: #f3efe4;
+  --card: #12141c;
+  --card-foreground: #f3efe4;
+  --popover: #12141c;
+  --popover-foreground: #f3efe4;
+  --primary: #e8ff47;
+  --primary-foreground: #14160a;
+  --secondary: #1a1d27;
+  --secondary-foreground: #f3efe4;
+  --muted: #1a1d27;
+  --muted-foreground: #9a9588;
+  --accent: #1f2430;
+  --accent-foreground: #f3efe4;
+  --destructive: #ff5a3c;
+  --border: rgba(243, 239, 228, 0.12);
+  --input: rgba(243, 239, 228, 0.14);
+  --ring: #e8ff47;
+  --up: #6ff2c5;
+  --down: #ff5a3c;
+  --run: #8eb0ff;
+  --warn: #ffc857;
+  --chart-1: #e8ff47;
+  --chart-2: #6ff2c5;
+  --chart-3: #8eb0ff;
+  --chart-4: #ff5a3c;
+  --chart-5: #ffc857;
+  --radius: 1rem;
+  --sidebar: #12141c;
+  --sidebar-foreground: #f3efe4;
+  --sidebar-primary: #e8ff47;
+  --sidebar-primary-foreground: #14160a;
+  --sidebar-accent: #1a1d27;
+  --sidebar-accent-foreground: #f3efe4;
+  --sidebar-border: rgba(243, 239, 228, 0.12);
+  --sidebar-ring: #e8ff47;
+}
+
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-mono: var(--font-mono);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-run: var(--run);
+  --color-warn: var(--warn);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html,
+  body {
+    @apply min-h-full;
+  }
+
+  body {
+    @apply text-foreground font-sans antialiased;
+    background:
+      radial-gradient(900px 520px at 88% -8%, rgba(232, 255, 71, 0.14), transparent 52%),
+      radial-gradient(800px 480px at -10% 108%, rgba(111, 242, 197, 0.1), transparent 50%),
+      radial-gradient(700px 400px at 40% 40%, rgba(142, 176, 255, 0.06), transparent 55%),
+      var(--background);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0.18;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.05em;
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-rise {
+  animation: rise 0.7s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-rise {
+    animation: none;
+  }
+}
