@@ -1,13 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { MonitorList } from "@/features/monitors/MonitorList";
 import { Button } from "@/components/ui/button";
 import { EmptyState, PageHeader } from "@/shared/ui/page-header";
 import { useSession } from "@/shared/session";
 
+const HIGHLIGHT_KEY = "pw.highlightMonitor";
+
 export default function MonitorsPage() {
   const { monitors } = useSession();
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = sessionStorage.getItem(HIGHLIGHT_KEY);
+    if (!id) return;
+    sessionStorage.removeItem(HIGHLIGHT_KEY);
+    setHighlightId(id);
+    const timer = window.setTimeout(() => setHighlightId(null), 5200);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   return (
     <>
@@ -33,7 +46,11 @@ export default function MonitorsPage() {
           Začni GET na endpoint, ktorý má zostať nažive.
         </EmptyState>
       ) : (
-        <MonitorList monitors={monitors} filterable />
+        <MonitorList
+          monitors={monitors}
+          filterable
+          highlightId={highlightId}
+        />
       )}
     </>
   );

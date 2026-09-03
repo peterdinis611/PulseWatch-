@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormError } from "@/shared/ui/form";
 import { BackLink } from "@/shared/ui/page-header";
+import { QuickCheckPanel } from "@/shared/ui/quick-check-panel";
 import { StatusBadge } from "@/shared/ui/status-badge";
 import { formatAgo, formatMs, targetOf } from "@/shared/lib/format";
 import { gql, gqlMessage } from "@/shared/graphql/client";
@@ -14,11 +15,12 @@ import { toast } from "sonner";
 import {
   DELETE_MONITOR,
   MONITOR_QUERY,
+  QUICK_MONITOR_CHECK,
   RUN_MONITOR,
   UPDATE_MONITOR,
 } from "@/shared/graphql/documents";
 import { monitorToForm } from "@/shared/lib/monitor-input";
-import type { Monitor } from "@/shared/lib/types";
+import type { Monitor, MonitorCheckResult } from "@/shared/lib/types";
 import { useSession } from "@/shared/session/SessionProvider";
 import { metaClass, monoClass, noteClass, splitClass } from "@/shared/ui/list";
 
@@ -28,7 +30,11 @@ export default function MonitorDetailPage() {
   const { refresh } = useSession();
   const [monitor, setMonitor] = useState<Monitor | null>(null);
   const [busy, setBusy] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quickResult, setQuickResult] = useState<MonitorCheckResult | null>(
+    null,
+  );
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
@@ -37,12 +43,13 @@ export default function MonitorDetailPage() {
     );
   }, [id]);
 
-  async function runCheck() {
+  async function runSavedCheck() {
     setBusy(true);
     setError(null);
     try {
       const data = await gql<{ runMonitorCheck: Monitor }>(RUN_MONITOR, { id });
       setMonitor(data.runMonitorCheck);
+      setQuickResult(null);
       await refresh();
       toast.success(`Kontrola: ${data.runMonitorCheck.lastStatus}`);
     } catch (err) {
@@ -51,6 +58,27 @@ export default function MonitorDetailPage() {
       toast.error("Kontrola zlyhala.", { description: message });
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function runQuickCheck(input: Record<string, unknown>) {
+    setChecking(true);
+    setError(null);
+    try {
+      const data = await gql<{ quickMonitorCheck: MonitorCheckResult }>(
+        QUICK_MONITOR_CHECK,
+        { id, input },
+      );
+      setQuickResult(data.quickMonitorCheck);
+      toast.success(`Rýchla kontrola: ${data.quickMonitorCheck.status}`, {
+        description: formatMs(data.quickMonitorCheck.latencyMs),
+      });
+    } catch (err) {
+      const message = gqlMessage(err);
+      setError(message);
+      toast.error("Rýchla kontrola zlyhala.", { description: message });
+    } finally {
+      setChecking(false);
     }
   }
 
@@ -92,13 +120,18 @@ export default function MonitorDetailPage() {
         </div>
         <div className="flex flex-wrap gap-2.5">
           <StatusBadge value={monitor.lastStatus} />
-          <Button disabled={busy} type="button" onClick={runCheck} size="lg">
-            Skontrolovať
+          <Button
+            disabled={busy || checking}
+            type="button"
+            onClick={runSavedCheck}
+            size="lg"
+          >
+            {busy ? "Kontrolujem…" : "Kontrola a uložiť"}
           </Button>
           {confirmDelete ? (
             <Button
               variant="destructive"
-              disabled={busy}
+              disabled={busy || checking}
               type="button"
               onClick={remove}
               size="lg"
@@ -118,9 +151,11 @@ export default function MonitorDetailPage() {
         </div>
       </header>
       <p className={`${monoClass} mb-6`}>
-        {formatMs(monitor.lastLatencyMs)} · {formatAgo(monitor.lastCheckedAt)}
+        Uložený stav: {formatMs(monitor.lastLatencyMs)} ·{" "}
+        {formatAgo(monitor.lastCheckedAt)}
         {monitor.lastError ? ` · ${monitor.lastError}` : ""}
       </p>
+      {quickResult ? <QuickCheckPanel result={quickResult} draft /> : null}
       <FormError>{error}</FormError>
       <div className={splitClass()}>
         <MonitorForm
@@ -128,7 +163,9 @@ export default function MonitorDetailPage() {
           initial={monitorToForm(monitor)}
           submitLabel="Uložiť"
           busy={busy}
+          checking={checking}
           error={null}
+          onQuickCheck={runQuickCheck}
           onSubmit={async (input) => {
             setBusy(true);
             setError(null);
@@ -138,6 +175,7 @@ export default function MonitorDetailPage() {
                 { id, input },
               );
               setMonitor(data.updateMonitor);
+              setQuickResult(null);
               await refresh();
               toast.success("Monitor uložený.");
             } catch (err) {
@@ -150,7 +188,9 @@ export default function MonitorDetailPage() {
           }}
         />
         <aside className={noteClass}>
-          Posledný stav je zo schedulera alebo ručnej kontroly.
+          Rýchla kontrola otestuje hodnoty vo formulári bez uloženia.
+          Kontrola a uložiť spustí check na uloženej konfigurácii a zapíše
+          výsledok.
         </aside>
       </div>
     </>

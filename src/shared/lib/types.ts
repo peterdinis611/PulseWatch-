@@ -78,6 +78,13 @@ export interface MonitorSettings {
   updatedAt: string;
 }
 
+export interface MonitorCheckResult {
+  status: MonitorStatus;
+  error: string | null;
+  latencyMs: number;
+  checkedAt: string;
+}
+
 export interface StressTestSummary {
   httpReqs?: number | null;
   avgMs?: number | null;

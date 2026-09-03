@@ -12,14 +12,15 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
-    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    setupFiles: ["./__tests__/setup.ts"],
+    include: ["__tests__/**/*.{test,spec}.{ts,tsx}"],
     restoreMocks: true,
     clearMocks: true,
   },
   resolve: {
     alias: {
       "@": path.resolve(root, "./src"),
+      "@tests": path.resolve(root, "./__tests__"),
     },
   },
 });

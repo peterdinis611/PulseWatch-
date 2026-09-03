@@ -118,6 +118,25 @@ export const RUN_MONITOR = `
   }
 `;
 
+const MONITOR_CHECK_RESULT = `
+  status
+  error
+  latencyMs
+  checkedAt
+`;
+
+export const PROBE_MONITOR = `
+  mutation ProbeMonitor($input: CreateMonitorInput!) {
+    probeMonitor(input: $input) { ${MONITOR_CHECK_RESULT} }
+  }
+`;
+
+export const QUICK_MONITOR_CHECK = `
+  mutation QuickMonitorCheck($id: String!, $input: UpdateMonitorInput) {
+    quickMonitorCheck(id: $id, input: $input) { ${MONITOR_CHECK_RESULT} }
+  }
+`;
+
 export const SETTINGS_QUERY = `
   query MonitorSettings {
     monitorSettings {

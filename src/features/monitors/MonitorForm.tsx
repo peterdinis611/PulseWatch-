@@ -22,13 +22,17 @@ export function MonitorForm({
   initial,
   submitLabel,
   onSubmit,
+  onQuickCheck,
   busy,
+  checking = false,
   error,
 }: {
   initial?: MonitorFormState;
   submitLabel: string;
   onSubmit: (input: Record<string, unknown>) => Promise<void>;
+  onQuickCheck?: (input: Record<string, unknown>) => Promise<void>;
   busy: boolean;
+  checking?: boolean;
   error: string | null;
 }) {
   const [form, setForm] = useState<MonitorFormState>(
@@ -279,9 +283,22 @@ export function MonitorForm({
         </CheckRow>
       )}
 
-      <Button disabled={busy} type="submit" size="lg">
-        {busy ? "Ukladám…" : submitLabel}
-      </Button>
+      <div className="flex flex-wrap gap-2.5">
+        {onQuickCheck ? (
+          <Button
+            disabled={busy || checking}
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={() => onQuickCheck(formToMonitorInput(form))}
+          >
+            {checking ? "Kontrolujem…" : "Rýchla kontrola"}
+          </Button>
+        ) : null}
+        <Button disabled={busy || checking} type="submit" size="lg">
+          {busy ? "Ukladám…" : submitLabel}
+        </Button>
+      </div>
     </form>
   );
 }
