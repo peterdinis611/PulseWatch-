@@ -150,6 +150,14 @@
   animation: rise 0.7s both;
 }
 
+[data-sonner-toaster] {
+  z-index: 80;
+}
+
+[data-sonner-toast] {
+  backdrop-filter: blur(12px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { StressForm } from "@/features/load/StressForm";
 import { BackLink, PageHeader } from "@/shared/ui/page-header";
 import { gql, gqlMessage } from "@/shared/graphql/client";
+import { toast } from "sonner";
 import { CREATE_STRESS } from "@/shared/graphql/documents";
 import type { StressTest } from "@/shared/lib/types";
 import { useSession } from "@/shared/session/SessionProvider";
@@ -38,9 +39,12 @@ export default function NewLoadPage() {
                 { input },
               );
               await refresh();
+              toast.success("Scenár vytvorený.");
               router.replace(`/load/${data.createStressTest.id}`);
             } catch (err) {
-              setError(gqlMessage(err));
+              const message = gqlMessage(err);
+              setError(message);
+              toast.error("Vytvorenie zlyhalo.", { description: message });
               setBusy(false);
             }
           }}

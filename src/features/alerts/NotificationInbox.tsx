@@ -9,6 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { gql, gqlMessage } from "@/shared/graphql/client";
+import { toast } from "sonner";
 import {
   MARK_ALL_READ,
   MARK_READ,
@@ -66,7 +67,9 @@ export function NotificationInbox() {
       );
       await refresh();
     } catch (err) {
-      setError(gqlMessage(err));
+      const message = gqlMessage(err);
+      setError(message);
+      toast.error("Označenie zlyhalo.", { description: message });
     }
   }
 
@@ -80,8 +83,11 @@ export function NotificationInbox() {
         })),
       );
       await refresh();
+      toast.success("Všetky prečítané.");
     } catch (err) {
-      setError(gqlMessage(err));
+      const message = gqlMessage(err);
+      setError(message);
+      toast.error("Označenie zlyhalo.", { description: message });
     }
   }
 

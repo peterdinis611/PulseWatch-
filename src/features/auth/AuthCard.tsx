@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { gql, gqlMessage } from "@/shared/graphql/client";
+import { toast } from "sonner";
 import { LOGIN_MUTATION, REGISTER_MUTATION } from "@/shared/graphql/documents";
 import type { AuthPayload } from "@/shared/lib/types";
 import { useSession } from "@/shared/session/SessionProvider";
@@ -48,7 +49,12 @@ export function AuthCard({
       }
       router.replace("/desk");
     } catch (err) {
-      setError(gqlMessage(err));
+      const message = gqlMessage(err);
+      setError(message);
+      toast.error(
+        mode === "login" ? "Prihlásenie zlyhalo." : "Registrácia zlyhala.",
+        { description: message },
+      );
     } finally {
       setBusy(false);
     }

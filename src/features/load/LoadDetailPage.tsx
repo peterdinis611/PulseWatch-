@@ -67,7 +67,9 @@ export default function LoadDetailPage() {
       await gql<{ runStressTest: StressTest }>(RUN_STRESS, { id });
       await reload();
       await refresh();
-      toast.success("k6 beží.", { description: "Výsledky prídu, keď dopíše summary." });
+      toast.success("k6 spustený.", {
+        description: "Výsledky prídu, keď dopíše summary.",
+      });
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);

@@ -44,9 +44,7 @@ export default function MonitorDetailPage() {
       const data = await gql<{ runMonitorCheck: Monitor }>(RUN_MONITOR, { id });
       setMonitor(data.runMonitorCheck);
       await refresh();
-      toast.success("Kontrola hotová.", {
-        description: data.runMonitorCheck.lastStatus,
-      });
+      toast.success(`Kontrola: ${data.runMonitorCheck.lastStatus}`);
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);

@@ -38,12 +38,16 @@ function Toaster({ ...props }: ToasterProps) {
           "--border-radius": "var(--radius)",
         } as React.CSSProperties
       }
+      closeButton
+      visibleToasts={4}
       toastOptions={{
         classNames: {
           toast:
-            "cn-toast font-sans border bg-popover text-popover-foreground shadow-lg",
+            "cn-toast font-sans border bg-popover text-popover-foreground shadow-[0_18px_50px_rgba(0,0,0,0.45)]",
           title: "font-heading tracking-[-0.03em]",
-          description: "text-muted-foreground",
+          description: "font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground",
+          closeButton:
+            "border-border bg-card text-muted-foreground hover:text-foreground",
         },
       }}
       {...props}
