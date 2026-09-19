@@ -37,6 +37,11 @@ function toForm(test: StressTest): StressFormState {
     expectedStatus: String(test.expectedStatus),
     p95Ms: test.p95Ms != null ? String(test.p95Ms) : "",
     maxFailRate: test.maxFailRate != null ? String(test.maxFailRate) : "",
+    scheduleEnabled: test.scheduleEnabled,
+    scheduleIntervalSec:
+      test.scheduleIntervalSec != null
+        ? String(test.scheduleIntervalSec)
+        : "86400",
   };
 }
 
@@ -116,6 +121,14 @@ export default function LoadDetailPage() {
           <p className={metaClass}>
             {test.method} {test.url}
           </p>
+          {test.scheduleEnabled && test.scheduleIntervalSec ? (
+            <p className={`${monoClass} mt-2 text-primary`}>
+              Plán každých {test.scheduleIntervalSec}s
+              {test.scheduleLastRunAt
+                ? ` · naposledy ${formatWhen(test.scheduleLastRunAt)}`
+                : ""}
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2.5">
           <StatusBadge value={test.lastStatus} />

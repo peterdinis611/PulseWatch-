@@ -10,7 +10,11 @@ import {
   type ReactNode,
 } from "react";
 import { gql, subscribeGql } from "@/shared/graphql/client";
-import { NOTIFICATION_SUB, SHELL_QUERY } from "@/shared/graphql/documents";
+import {
+  MONITOR_UPDATED_SUB,
+  NOTIFICATION_SUB,
+  SHELL_QUERY,
+} from "@/shared/graphql/documents";
 import { clearToken, getToken, setToken } from "@/shared/session/token";
 import type { Monitor, Notification, User } from "@/shared/lib/types";
 
@@ -64,21 +68,34 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!token) return;
-    const interval = window.setInterval(() => {
-      refresh().catch(() => undefined);
-    }, 8000);
-    const stopSub = subscribeGql<{ notificationReceived: Notification }>(
+
+    const stopNotification = subscribeGql<{ notificationReceived: Notification }>(
       NOTIFICATION_SUB,
       () => {
-        setUnread((n) => n + 1);
-        refresh().catch(() => undefined);
+        setUnread((count) => count + 1);
       },
     );
+
+    const stopMonitor = subscribeGql<{ monitorUpdated: Monitor }>(
+      MONITOR_UPDATED_SUB,
+      (data) => {
+        setMonitors((prev) => {
+          const index = prev.findIndex(
+            (monitor) => monitor.id === data.monitorUpdated.id,
+          );
+          if (index === -1) return prev;
+          const next = [...prev];
+          next[index] = data.monitorUpdated;
+          return next;
+        });
+      },
+    );
+
     return () => {
-      window.clearInterval(interval);
-      stopSub();
+      stopNotification();
+      stopMonitor();
     };
-  }, [token, refresh]);
+  }, [token]);
 
   const signIn = useCallback(
     async (accessToken: string) => {

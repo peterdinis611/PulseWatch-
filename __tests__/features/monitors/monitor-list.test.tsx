@@ -26,6 +26,16 @@ describe("MonitorList", () => {
     }),
   ];
 
+  it("filters by monitor type", async () => {
+    const user = userEvent.setup();
+
+    render(<MonitorList monitors={monitors} filterable />);
+    await user.click(screen.getByRole("radio", { name: "REDIS" }));
+
+    expect(screen.getByText("Redis")).toBeInTheDocument();
+    expect(screen.queryByText("Pdf App")).not.toBeInTheDocument();
+  });
+
   it("filters by search query and status chips", async () => {
     const user = userEvent.setup();
 

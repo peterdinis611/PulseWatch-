@@ -5,7 +5,8 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { monitorColumns } from "@/features/monitors/monitor-columns";
-import type { Monitor, MonitorStatus } from "@/shared/lib/types";
+import type { Monitor, MonitorStatus, MonitorType } from "@/shared/lib/types";
+import { MONITOR_TYPES } from "@/shared/lib/types";
 import { TypeChips } from "@/shared/ui/page-header";
 import { DataTable } from "@/shared/ui/data-table";
 import {
@@ -16,7 +17,8 @@ import {
 import { cn } from "@/lib/utils";
 import { targetOf } from "@/shared/lib/format";
 
-const FILTERS = ["ALL", "UP", "DOWN", "UNKNOWN"] as const;
+const STATUS_FILTERS = ["ALL", "UP", "DOWN", "UNKNOWN"] as const;
+const TYPE_FILTERS = ["ALL", ...MONITOR_TYPES] as const;
 
 export function MonitorList({
   monitors,
@@ -36,7 +38,9 @@ export function MonitorList({
   showAllHref?: string;
 }) {
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<(typeof FILTERS)[number]>("ALL");
+  const [status, setStatus] = useState<(typeof STATUS_FILTERS)[number]>("ALL");
+  const [monitorType, setMonitorType] =
+    useState<(typeof TYPE_FILTERS)[number]>("ALL");
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -45,9 +49,11 @@ export function MonitorList({
       const matchQuery = !q || hay.includes(q);
       const matchStatus =
         status === "ALL" || monitor.lastStatus === (status as MonitorStatus);
-      return matchQuery && matchStatus;
+      const matchType =
+        monitorType === "ALL" || monitor.type === (monitorType as MonitorType);
+      return matchQuery && matchStatus && matchType;
     });
-  }, [monitors, query, status]);
+  }, [monitors, query, status, monitorType]);
 
   const counts = useMemo(
     () => ({
@@ -96,15 +102,26 @@ export function MonitorList({
               <TypeChips
                 label="Stav"
                 className="mb-0 shrink-0"
-                options={[...FILTERS]}
+                options={[...STATUS_FILTERS]}
                 value={status}
-                onChange={(value) => setStatus(value as (typeof FILTERS)[number])}
+                onChange={(value) =>
+                  setStatus(value as (typeof STATUS_FILTERS)[number])
+                }
               />
             </div>
             <p className={cn(monoClass, "shrink-0 pb-1")}>
               {visible.length} / {monitors.length}
             </p>
           </div>
+          <TypeChips
+            label="Typ"
+            className="mt-4"
+            options={[...TYPE_FILTERS]}
+            value={monitorType}
+            onChange={(value) =>
+              setMonitorType(value as (typeof TYPE_FILTERS)[number])
+            }
+          />
           <div className="mt-4 flex flex-wrap gap-2">
             <StatPill label="Hore" value={counts.up} tone="up" />
             <StatPill label="Dole" value={counts.down} tone="down" />

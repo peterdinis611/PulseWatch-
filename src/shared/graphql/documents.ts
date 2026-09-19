@@ -52,6 +52,9 @@ const STRESS_FIELDS = `
     checksFailed
   }
   lastRunAt
+  scheduleEnabled
+  scheduleIntervalSec
+  scheduleLastRunAt
   createdAt
   updatedAt
 `;
@@ -137,6 +140,17 @@ export const QUICK_MONITOR_CHECK = `
   }
 `;
 
+export const MONITOR_HISTORY_QUERY = `
+  query MonitorHistory($id: String!, $hours: Int) {
+    monitorChecks(id: $id, hours: $hours) {
+      id monitorId status error latencyMs checkedAt
+    }
+    monitorUptime(id: $id, hours: $hours) {
+      periodHours totalChecks upChecks uptimePercent avgLatencyMs
+    }
+  }
+`;
+
 export const SETTINGS_QUERY = `
   query MonitorSettings {
     monitorSettings {
@@ -144,6 +158,9 @@ export const SETTINGS_QUERY = `
       defaultTimeoutMs
       notifyOnDown
       notifyOnRecover
+      webhookUrl
+      slackWebhookUrl
+      alertEmail
       updatedAt
     }
   }
@@ -156,6 +173,9 @@ export const UPDATE_SETTINGS = `
       defaultTimeoutMs
       notifyOnDown
       notifyOnRecover
+      webhookUrl
+      slackWebhookUrl
+      alertEmail
       updatedAt
     }
   }
@@ -164,6 +184,31 @@ export const UPDATE_SETTINGS = `
 export const STRESS_TESTS_QUERY = `
   query StressTests {
     stressTests { ${STRESS_FIELDS} }
+  }
+`;
+
+export const K6_STATUS_QUERY = `
+  query K6Status {
+    k6Status {
+      installed
+      message
+    }
+  }
+`;
+
+export const MONITOR_UPDATED_SUB = `
+  subscription MonitorUpdated {
+    monitorUpdated { ${MONITOR_FIELDS} }
+  }
+`;
+
+export const LOAD_PAGE_QUERY = `
+  query LoadPage {
+    stressTests { ${STRESS_FIELDS} }
+    k6Status {
+      installed
+      message
+    }
   }
 `;
 
@@ -216,7 +261,7 @@ export const RUN_STRESS = `
 export const NOTIFICATIONS_QUERY = `
   query Notifications {
     notifications {
-      id type title body readAt createdAt
+      id type title body monitorId stressTestId readAt createdAt
     }
     unreadNotificationCount
   }
@@ -239,7 +284,7 @@ export const MARK_ALL_READ = `
 export const NOTIFICATION_SUB = `
   subscription NotificationReceived {
     notificationReceived {
-      id type title body readAt createdAt
+      id type title body monitorId stressTestId readAt createdAt
     }
   }
 `;

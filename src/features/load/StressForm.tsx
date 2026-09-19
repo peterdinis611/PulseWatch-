@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EnumSelect, FormError, FormField, FormRow } from "@/shared/ui/form";
+import { EnumSelect, FormError, FormField, FormRow, CheckRow } from "@/shared/ui/form";
 import { STRESS_METHODS } from "@/shared/lib/types";
 import {
   blankStressForm,
@@ -119,6 +119,23 @@ export function StressForm({
           />
         </FormField>
       </FormRow>
+      <CheckRow
+        checked={form.scheduleEnabled}
+        onCheckedChange={(value) => set("scheduleEnabled", value)}
+      >
+        Plánovaný beh (cron/BullMQ)
+      </CheckRow>
+      {form.scheduleEnabled ? (
+        <FormField label="Interval plánu s (300–86400)">
+          <Input
+            required
+            inputMode="numeric"
+            value={form.scheduleIntervalSec}
+            onChange={(e) => set("scheduleIntervalSec", e.target.value)}
+            className="h-9"
+          />
+        </FormField>
+      ) : null}
       <Button disabled={busy} type="submit" size="lg">
         {busy ? "Ukladám…" : submitLabel}
       </Button>

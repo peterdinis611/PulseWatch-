@@ -75,7 +75,27 @@ export interface MonitorSettings {
   defaultTimeoutMs: number;
   notifyOnDown: boolean;
   notifyOnRecover: boolean;
+  webhookUrl: string | null;
+  slackWebhookUrl: string | null;
+  alertEmail: string | null;
   updatedAt: string;
+}
+
+export interface MonitorCheck {
+  id: string;
+  monitorId: string;
+  status: MonitorStatus;
+  error: string | null;
+  latencyMs: number;
+  checkedAt: string;
+}
+
+export interface MonitorUptime {
+  periodHours: number;
+  totalChecks: number;
+  upChecks: number;
+  uptimePercent: number;
+  avgLatencyMs: number | null;
 }
 
 export interface MonitorCheckResult {
@@ -108,6 +128,9 @@ export interface StressTest {
   lastError: string | null;
   lastSummary: StressTestSummary | null;
   lastRunAt: string | null;
+  scheduleEnabled: boolean;
+  scheduleIntervalSec: number | null;
+  scheduleLastRunAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -127,6 +150,8 @@ export interface Notification {
   type: NotificationType;
   title: string;
   body: string;
+  monitorId: string | null;
+  stressTestId: string | null;
   readAt: string | null;
   createdAt: string;
 }

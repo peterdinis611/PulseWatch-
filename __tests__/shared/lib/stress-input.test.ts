@@ -13,6 +13,7 @@ describe("formToStressInput", () => {
       vus: 10,
       durationSec: 30,
       expectedStatus: 200,
+      scheduleEnabled: false,
     });
   });
 

@@ -14,14 +14,21 @@ import { gql, gqlMessage } from "@/shared/graphql/client";
 import { toast } from "sonner";
 import {
   DELETE_MONITOR,
+  MONITOR_HISTORY_QUERY,
   MONITOR_QUERY,
   QUICK_MONITOR_CHECK,
   RUN_MONITOR,
   UPDATE_MONITOR,
 } from "@/shared/graphql/documents";
 import { monitorToForm } from "@/shared/lib/monitor-input";
-import type { Monitor, MonitorCheckResult } from "@/shared/lib/types";
+import type {
+  Monitor,
+  MonitorCheck,
+  MonitorCheckResult,
+  MonitorUptime,
+} from "@/shared/lib/types";
 import { useSession } from "@/shared/session/SessionProvider";
+import { MonitorHistoryPanel } from "@/shared/ui/monitor-history-panel";
 import { metaClass, monoClass, noteClass, splitClass } from "@/shared/ui/list";
 
 export default function MonitorDetailPage() {
@@ -35,12 +42,24 @@ export default function MonitorDetailPage() {
   const [quickResult, setQuickResult] = useState<MonitorCheckResult | null>(
     null,
   );
+  const [history, setHistory] = useState<MonitorCheck[]>([]);
+  const [uptime, setUptime] = useState<MonitorUptime | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  async function loadHistory() {
+    const data = await gql<{
+      monitorChecks: MonitorCheck[];
+      monitorUptime: MonitorUptime;
+    }>(MONITOR_HISTORY_QUERY, { id, hours: 24 });
+    setHistory(data.monitorChecks);
+    setUptime(data.monitorUptime);
+  }
 
   useEffect(() => {
     gql<{ monitor: Monitor }>(MONITOR_QUERY, { id }).then((data) =>
       setMonitor(data.monitor),
     );
+    void loadHistory();
   }, [id]);
 
   async function runSavedCheck() {
@@ -51,6 +70,7 @@ export default function MonitorDetailPage() {
       setMonitor(data.runMonitorCheck);
       setQuickResult(null);
       await refresh();
+      await loadHistory();
       toast.success(`Kontrola: ${data.runMonitorCheck.lastStatus}`);
     } catch (err) {
       const message = gqlMessage(err);
@@ -156,6 +176,11 @@ export default function MonitorDetailPage() {
         {monitor.lastError ? ` · ${monitor.lastError}` : ""}
       </p>
       {quickResult ? <QuickCheckPanel result={quickResult} draft /> : null}
+      <MonitorHistoryPanel
+        checks={history}
+        uptime={uptime}
+        className="mb-8"
+      />
       <FormError>{error}</FormError>
       <div className={splitClass()}>
         <MonitorForm

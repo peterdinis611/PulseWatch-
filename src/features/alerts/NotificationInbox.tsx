@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,12 +10,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { gql, gqlMessage } from "@/shared/graphql/client";
+import { gql, gqlMessage, subscribeGql } from "@/shared/graphql/client";
 import { toast } from "sonner";
 import {
   MARK_ALL_READ,
   MARK_READ,
   NOTIFICATIONS_QUERY,
+  NOTIFICATION_SUB,
 } from "@/shared/graphql/documents";
 import { formatAgo } from "@/shared/lib/format";
 import type { Notification } from "@/shared/lib/types";
@@ -21,41 +24,54 @@ import { useSession } from "@/shared/session";
 import { StatusBadge } from "@/shared/ui/status-badge";
 import { cn } from "@/lib/utils";
 
+function notificationHref(item: Notification): string | null {
+  if (item.monitorId) return `/monitors/${item.monitorId}`;
+  if (item.stressTestId) return `/load/${item.stressTestId}`;
+  return null;
+}
+
 export function NotificationInbox() {
+  const router = useRouter();
   const { unread, refresh } = useSession();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Notification[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
+  const load = useCallback(async () => {
+    try {
+      const data = await gql<{
+        notifications: Notification[];
+        unreadNotificationCount: number;
+      }>(NOTIFICATIONS_QUERY);
+      setItems(data.notifications);
+      setError(null);
+      setLoaded(true);
+    } catch (err) {
+      setError(gqlMessage(err));
+      setLoaded(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (!open) return;
-    let alive = true;
 
-    async function load() {
-      try {
-        const data = await gql<{
-          notifications: Notification[];
-          unreadNotificationCount: number;
-        }>(NOTIFICATIONS_QUERY);
-        if (!alive) return;
-        setItems(data.notifications);
-        setError(null);
-        setLoaded(true);
-      } catch (err) {
-        if (!alive) return;
-        setError(gqlMessage(err));
-        setLoaded(true);
-      }
-    }
+    void load();
+    const stop = subscribeGql<{ notificationReceived: Notification }>(
+      NOTIFICATION_SUB,
+      (data) => {
+        setItems((prev) => {
+          if (prev.some((item) => item.id === data.notificationReceived.id)) {
+            return prev;
+          }
+          return [data.notificationReceived, ...prev];
+        });
+        void refresh();
+      },
+    );
 
-    load();
-    const id = window.setInterval(load, 5000);
-    return () => {
-      alive = false;
-      window.clearInterval(id);
-    };
-  }, [open]);
+    return stop;
+  }, [open, load, refresh]);
 
   async function markOne(id: string) {
     try {
@@ -127,15 +143,24 @@ export function NotificationInbox() {
               Čo flota povedala.
             </p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={unread === 0}
-            onClick={markAll}
-          >
-            Označiť prečítané
-          </Button>
+          <div className="flex flex-col items-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={unread === 0}
+              onClick={markAll}
+            >
+              Označiť prečítané
+            </Button>
+            <Link
+              href="/alerts"
+              className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground hover:text-primary"
+              onClick={() => setOpen(false)}
+            >
+              Celá história →
+            </Link>
+          </div>
         </header>
         {error ? (
           <p className="px-4 py-3 text-sm text-destructive">{error}</p>
@@ -153,40 +178,81 @@ export function NotificationInbox() {
               </p>
             </div>
           ) : (
-            items.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={cn(
-                  "grid w-full grid-cols-[auto_minmax(0,1fr)] gap-3 border-b border-border px-4 py-3 text-left last:border-b-0",
-                  !item.readAt && "bg-primary/5 shadow-[inset_3px_0_0_var(--primary)]",
-                  item.readAt ? "cursor-default" : "cursor-pointer hover:bg-muted/40",
-                )}
-                onClick={() => {
-                  if (!item.readAt) markOne(item.id);
-                }}
-              >
-                <StatusBadge value={item.type} />
-                <div className="min-w-0">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <p className="font-heading text-sm tracking-[-0.03em]">
-                      {item.title}
+            items.slice(0, 12).map((item) => {
+              const href = notificationHref(item);
+              const rowClass = cn(
+                "grid w-full grid-cols-[auto_minmax(0,1fr)] gap-3 border-b border-border px-4 py-3 text-left last:border-b-0",
+                !item.readAt && "bg-primary/5 shadow-[inset_3px_0_0_var(--primary)]",
+                href ? "cursor-pointer hover:bg-muted/40" : "cursor-default",
+              );
+
+              const content = (
+                <>
+                  <StatusBadge value={item.type} />
+                  <div className="min-w-0">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <p className="font-heading text-sm tracking-[-0.03em]">
+                        {item.title}
+                      </p>
+                      <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                        {item.readAt ? "READ" : "NEW"}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 line-clamp-2 text-[13px] text-muted-foreground">
+                      {item.body}
                     </p>
-                    <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                      {item.readAt ? "READ" : "NEW"}
-                    </span>
+                    <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+                      {formatAgo(item.createdAt)}
+                    </p>
                   </div>
-                  <p className="mt-0.5 line-clamp-2 text-[13px] text-muted-foreground">
-                    {item.body}
-                  </p>
-                  <p className="mt-1 font-mono text-[10px] text-muted-foreground">
-                    {formatAgo(item.createdAt)}
-                  </p>
-                </div>
-              </button>
-            ))
+                </>
+              );
+
+              if (href) {
+                return (
+                  <Link
+                    key={item.id}
+                    href={href}
+                    className={rowClass}
+                    onClick={() => {
+                      if (!item.readAt) void markOne(item.id);
+                      setOpen(false);
+                    }}
+                  >
+                    {content}
+                  </Link>
+                );
+              }
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={rowClass}
+                  onClick={() => {
+                    if (!item.readAt) markOne(item.id);
+                  }}
+                >
+                  {content}
+                </button>
+              );
+            })
           )}
         </div>
+        {items.length > 12 ? (
+          <footer className="border-t border-border px-4 py-2 text-center">
+            <button
+              type="button"
+              className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary"
+              onClick={() => {
+                setOpen(false);
+                router.push("/alerts");
+              }}
+            >
+              +{items.length - 12} ďalších →
+            </button>
+          </footer>
+        ) : null}
       </PopoverContent>
     </Popover>
   );

@@ -22,6 +22,9 @@ export default function SettingsPage() {
   const [timeoutMs, setTimeoutMs] = useState("10000");
   const [notifyOnDown, setNotifyOnDown] = useState(true);
   const [notifyOnRecover, setNotifyOnRecover] = useState(true);
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [slackWebhookUrl, setSlackWebhookUrl] = useState("");
+  const [alertEmail, setAlertEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +35,9 @@ export default function SettingsPage() {
       setTimeoutMs(String(data.monitorSettings.defaultTimeoutMs));
       setNotifyOnDown(data.monitorSettings.notifyOnDown);
       setNotifyOnRecover(data.monitorSettings.notifyOnRecover);
+      setWebhookUrl(data.monitorSettings.webhookUrl ?? "");
+      setSlackWebhookUrl(data.monitorSettings.slackWebhookUrl ?? "");
+      setAlertEmail(data.monitorSettings.alertEmail ?? "");
     });
   }, []);
 
@@ -48,6 +54,9 @@ export default function SettingsPage() {
             defaultTimeoutMs: Number(timeoutMs),
             notifyOnDown,
             notifyOnRecover,
+            webhookUrl: webhookUrl.trim() || null,
+            slackWebhookUrl: slackWebhookUrl.trim() || null,
+            alertEmail: alertEmail.trim() || null,
           },
         },
       );
@@ -104,7 +113,37 @@ export default function SettingsPage() {
           >
             Upozornenie pri recovery
           </CheckRow>
-          <Button disabled={busy} type="submit" size="lg">
+
+          <p className="mb-3 mt-8 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+            Externé kanály
+          </p>
+          <FormField label="Webhook URL (JSON POST)">
+            <Input
+              value={webhookUrl}
+              onChange={(e) => setWebhookUrl(e.target.value)}
+              placeholder="https://hooks.example.com/pulsewatch"
+              className="h-9"
+            />
+          </FormField>
+          <FormField label="Slack incoming webhook">
+            <Input
+              value={slackWebhookUrl}
+              onChange={(e) => setSlackWebhookUrl(e.target.value)}
+              placeholder="https://hooks.slack.com/services/…"
+              className="h-9"
+            />
+          </FormField>
+          <FormField label="E-mail pre alerty">
+            <Input
+              type="email"
+              value={alertEmail}
+              onChange={(e) => setAlertEmail(e.target.value)}
+              placeholder="oncall@example.com"
+              className="h-9"
+            />
+          </FormField>
+
+          <Button disabled={busy} type="submit" size="lg" className="mt-4">
             {busy ? "Ukladám…" : "Uložiť"}
           </Button>
           {settings ? (
@@ -114,7 +153,9 @@ export default function SettingsPage() {
           ) : null}
         </form>
         <aside className={noteClass}>
-          JWT ostáva v prehliadači. GraphQL ide na {GRAPHQL_HTTP}.
+          JWT ostáva v prehliadači. GraphQL ide na {GRAPHQL_HTTP}. E-mail vyžaduje
+          SMTP v backend .env (SMTP_HOST, SMTP_USER, SMTP_PASS). Webhook dostane
+          JSON s udalosťou, titulkom a telom.
         </aside>
       </div>
     </>
