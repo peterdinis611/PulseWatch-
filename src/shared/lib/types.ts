@@ -59,6 +59,7 @@ export interface Monitor {
   name: string;
   type: MonitorType;
   enabled: boolean;
+  alertsMuted: boolean;
   intervalSec: number;
   timeoutMs: number;
   lastStatus: MonitorStatus;
@@ -78,7 +79,16 @@ export interface MonitorSettings {
   webhookUrl: string | null;
   slackWebhookUrl: string | null;
   alertEmail: string | null;
+  fleetAlertsMuted: boolean;
+  maintenanceUntil: string | null;
   updatedAt: string;
+}
+
+export interface FleetUptime {
+  periodHours: number;
+  monitorCount: number;
+  totalChecks: number;
+  avgUptimePercent: number;
 }
 
 export interface MonitorCheck {

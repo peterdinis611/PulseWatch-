@@ -6,6 +6,7 @@ export function mockMonitor(overrides: Partial<Monitor> = {}): Monitor {
     name: "Pdf App",
     type: "HTTP",
     enabled: true,
+    alertsMuted: false,
     intervalSec: 60,
     timeoutMs: 10_000,
     lastStatus: "UP",

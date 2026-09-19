@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowDownRight, ArrowUpRight, Zap } from "lucide-react";
+import { Activity, ArrowDownRight, ArrowUpRight, Zap } from "lucide-react";
 import { Constellation } from "@/features/desk/Constellation";
 import { MonitorList } from "@/features/monitors/MonitorList";
 import { Button } from "@/components/ui/button";
 import { EmptyState, PageHeader } from "@/shared/ui/page-header";
 import { usePoll } from "@/shared/hooks/usePoll";
 import { gql } from "@/shared/graphql/client";
-import { STRESS_TESTS_QUERY } from "@/shared/graphql/documents";
-import type { StressTest } from "@/shared/lib/types";
+import { DESK_QUERY } from "@/shared/graphql/documents";
+import type { FleetUptime, StressTest } from "@/shared/lib/types";
 import { useSession } from "@/shared/session";
 import { listPanelClass } from "@/shared/ui/list";
 import { cn } from "@/lib/utils";
@@ -19,16 +19,22 @@ export default function DeskPage() {
   const router = useRouter();
   const { monitors } = useSession();
   const { data } = usePoll(
-    () => gql<{ stressTests: StressTest[] }>(STRESS_TESTS_QUERY),
+    () =>
+      gql<{ fleetUptime: FleetUptime; stressTests: StressTest[] }>(DESK_QUERY),
     8000,
   );
   const loads = data?.stressTests ?? [];
+  const uptime = data?.fleetUptime;
   const up = monitors.filter((m) => m.lastStatus === "UP").length;
   const down = monitors.filter((m) => m.lastStatus === "DOWN").length;
   const running = loads.filter((t) => t.lastStatus === "RUNNING").length;
   const downMonitors = monitors.filter((m) => m.lastStatus === "DOWN");
   const previewMonitors =
     downMonitors.length > 0 ? downMonitors : monitors.slice(0, 6);
+  const uptimeLabel =
+    uptime && uptime.monitorCount > 0
+      ? `${uptime.avgUptimePercent.toFixed(1)}%`
+      : "—";
 
   return (
     <>
@@ -62,7 +68,7 @@ export default function DeskPage() {
           <Constellation monitors={monitors} />
         </div>
 
-        <div className="grid grid-cols-1 gap-px border-t border-border/60 bg-border/40 md:grid-cols-[1.35fr_1fr_1fr]">
+        <div className="grid grid-cols-1 gap-px border-t border-border/60 bg-border/40 sm:grid-cols-2 lg:grid-cols-4">
           <DeskStatCard
             label="Hore"
             value={up}
@@ -84,11 +90,19 @@ export default function DeskPage() {
             }}
           />
           <DeskStatCard
+            label="Uptime 24h"
+            value={uptimeLabel}
+            tone="up"
+            icon={Activity}
+            delay={2}
+            onClick={() => router.push("/monitors")}
+          />
+          <DeskStatCard
             label="k6 beží"
             value={running}
             tone="run"
             icon={Zap}
-            delay={2}
+            delay={3}
             onClick={() => router.push("/load")}
           />
         </div>
@@ -130,7 +144,7 @@ function DeskStatCard({
   onClick,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   suffix?: string;
   tone: "up" | "down" | "run" | "muted";
   icon: typeof ArrowUpRight;

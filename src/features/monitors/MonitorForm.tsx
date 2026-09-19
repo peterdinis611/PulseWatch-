@@ -96,6 +96,12 @@ export function MonitorForm({
       >
         Monitor je zapnutý
       </CheckRow>
+      <CheckRow
+        checked={form.alertsMuted}
+        onCheckedChange={(checked) => set("alertsMuted", checked)}
+      >
+        Stíšiť alerty (údržba / deploy)
+      </CheckRow>
 
       {form.type === "HTTP" ? (
         <>

@@ -10,12 +10,13 @@ import { BackLink } from "@/shared/ui/page-header";
 import { QuickCheckPanel } from "@/shared/ui/quick-check-panel";
 import { StatusBadge } from "@/shared/ui/status-badge";
 import { formatAgo, formatMs, targetOf } from "@/shared/lib/format";
-import { gql, gqlMessage } from "@/shared/graphql/client";
+import { gql, gqlMessage, subscribeGql } from "@/shared/graphql/client";
 import { toast } from "sonner";
 import {
   DELETE_MONITOR,
   MONITOR_HISTORY_QUERY,
   MONITOR_QUERY,
+  MONITOR_UPDATED_SUB,
   QUICK_MONITOR_CHECK,
   RUN_MONITOR,
   UPDATE_MONITOR,
@@ -60,6 +61,18 @@ export default function MonitorDetailPage() {
       setMonitor(data.monitor),
     );
     void loadHistory();
+  }, [id]);
+
+  useEffect(() => {
+    const stop = subscribeGql<{ monitorUpdated: Monitor }>(
+      MONITOR_UPDATED_SUB,
+      (data) => {
+        if (data.monitorUpdated.id !== id) return;
+        setMonitor(data.monitorUpdated);
+        void loadHistory();
+      },
+    );
+    return stop;
   }, [id]);
 
   async function runSavedCheck() {

@@ -3,6 +3,7 @@ const MONITOR_FIELDS = `
   name
   type
   enabled
+  alertsMuted
   intervalSec
   timeoutMs
   lastStatus
@@ -161,6 +162,8 @@ export const SETTINGS_QUERY = `
       webhookUrl
       slackWebhookUrl
       alertEmail
+      fleetAlertsMuted
+      maintenanceUntil
       updatedAt
     }
   }
@@ -176,8 +179,33 @@ export const UPDATE_SETTINGS = `
       webhookUrl
       slackWebhookUrl
       alertEmail
+      fleetAlertsMuted
+      maintenanceUntil
       updatedAt
     }
+  }
+`;
+
+export const FLEET_UPTIME_QUERY = `
+  query FleetUptime($hours: Int) {
+    fleetUptime(hours: $hours) {
+      periodHours
+      monitorCount
+      totalChecks
+      avgUptimePercent
+    }
+  }
+`;
+
+export const DESK_QUERY = `
+  query Desk {
+    fleetUptime(hours: 24) {
+      periodHours
+      monitorCount
+      totalChecks
+      avgUptimePercent
+    }
+    stressTests { ${STRESS_FIELDS} }
   }
 `;
 

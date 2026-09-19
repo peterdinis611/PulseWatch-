@@ -6,6 +6,7 @@ export interface MonitorFormState {
   intervalSec: string;
   timeoutMs: string;
   enabled: boolean;
+  alertsMuted: boolean;
   httpUrl: string;
   httpMethod: string;
   httpStatus: string;
@@ -32,6 +33,7 @@ const empty: MonitorFormState = {
   intervalSec: "",
   timeoutMs: "",
   enabled: true,
+  alertsMuted: false,
   httpUrl: "https://",
   httpMethod: "GET",
   httpStatus: "200",
@@ -74,6 +76,7 @@ export function monitorToForm(monitor: Monitor): MonitorFormState {
     intervalSec: String(monitor.intervalSec),
     timeoutMs: String(monitor.timeoutMs),
     enabled: monitor.enabled,
+    alertsMuted: monitor.alertsMuted,
     httpUrl: str(c.url, empty.httpUrl),
     httpMethod: str(c.method, "GET"),
     httpStatus: num(c.expectedStatus, "200"),
@@ -122,6 +125,7 @@ export function formToMonitorInput(form: MonitorFormState) {
     name: form.name.trim(),
     type: form.type,
     enabled: form.enabled,
+    alertsMuted: form.alertsMuted,
   };
   const interval = optionalInt(form.intervalSec);
   const timeout = optionalInt(form.timeoutMs);

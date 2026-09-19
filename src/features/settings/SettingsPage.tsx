@@ -25,6 +25,8 @@ export default function SettingsPage() {
   const [webhookUrl, setWebhookUrl] = useState("");
   const [slackWebhookUrl, setSlackWebhookUrl] = useState("");
   const [alertEmail, setAlertEmail] = useState("");
+  const [fleetAlertsMuted, setFleetAlertsMuted] = useState(false);
+  const [maintenanceUntil, setMaintenanceUntil] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +40,10 @@ export default function SettingsPage() {
       setWebhookUrl(data.monitorSettings.webhookUrl ?? "");
       setSlackWebhookUrl(data.monitorSettings.slackWebhookUrl ?? "");
       setAlertEmail(data.monitorSettings.alertEmail ?? "");
+      setFleetAlertsMuted(data.monitorSettings.fleetAlertsMuted);
+      setMaintenanceUntil(
+        isoToLocalInput(data.monitorSettings.maintenanceUntil),
+      );
     });
   }, []);
 
@@ -57,6 +63,8 @@ export default function SettingsPage() {
             webhookUrl: webhookUrl.trim() || null,
             slackWebhookUrl: slackWebhookUrl.trim() || null,
             alertEmail: alertEmail.trim() || null,
+            fleetAlertsMuted,
+            maintenanceUntil: localInputToIso(maintenanceUntil),
           },
         },
       );
@@ -115,6 +123,24 @@ export default function SettingsPage() {
           </CheckRow>
 
           <p className="mb-3 mt-8 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+            Údržba floty
+          </p>
+          <CheckRow
+            checked={fleetAlertsMuted}
+            onCheckedChange={setFleetAlertsMuted}
+          >
+            Stíšiť všetky alerty (deploy / maintenance)
+          </CheckRow>
+          <FormField label="Maintenance do (lokálny čas)">
+            <Input
+              type="datetime-local"
+              value={maintenanceUntil}
+              onChange={(e) => setMaintenanceUntil(e.target.value)}
+              className="h-9"
+            />
+          </FormField>
+
+          <p className="mb-3 mt-8 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
             Externé kanály
           </p>
           <FormField label="Webhook URL (JSON POST)">
@@ -155,9 +181,27 @@ export default function SettingsPage() {
         <aside className={noteClass}>
           JWT ostáva v prehliadači. GraphQL ide na {GRAPHQL_HTTP}. E-mail vyžaduje
           SMTP v backend .env (SMTP_HOST, SMTP_USER, SMTP_PASS). Webhook dostane
-          JSON s udalosťou, titulkom a telom.
+          JSON s udalosťou, titulkom a telom. Rovnaký alert sa neopakuje častejšie
+          ako raz za 5 minút (anti-flap). Per-monitor mute nastavíš v detaile
+          monitora.
         </aside>
       </div>
     </>
   );
+}
+
+function isoToLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function localInputToIso(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const date = new Date(trimmed);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
 }
