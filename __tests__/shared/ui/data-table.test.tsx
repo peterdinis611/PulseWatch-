@@ -10,11 +10,25 @@ const push = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push, replace: vi.fn(), back: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock("@/shared/session", () => ({
+  useSession: () => ({
+    refresh: vi.fn(),
+    monitors: [],
+    ready: true,
+    token: "t",
+    user: null,
+    unread: 0,
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  }),
 }));
 
 describe("table columns", () => {
   it("defines monitor and stress column sets", () => {
-    expect(monitorColumns).toHaveLength(5);
+    expect(monitorColumns).toHaveLength(6);
     expect(stressColumns).toHaveLength(5);
     expect(
       "accessorKey" in monitorColumns[0] && monitorColumns[0].accessorKey,

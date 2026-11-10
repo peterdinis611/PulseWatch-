@@ -12,6 +12,7 @@ function monitor(overrides: Partial<Monitor> = {}): Monitor {
     name: "API",
     type: "HTTP",
     enabled: true,
+    alertsMuted: false,
     intervalSec: 60,
     timeoutMs: 10000,
     lastStatus: "UP",

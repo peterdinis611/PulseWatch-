@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   flexRender,
@@ -30,6 +30,7 @@ type DataTableProps<T extends RowData> = {
   getRowId?: (row: T) => string;
   highlightRowId?: string | null;
   emptyMessage?: string;
+  emptyAction?: ReactNode;
   rowClassName?: (row: T, index: number) => string | undefined;
   animateRows?: boolean;
   className?: string;
@@ -42,6 +43,7 @@ export function DataTable<T extends RowData>({
   getRowId,
   highlightRowId,
   emptyMessage = "Žiadne záznamy.",
+  emptyAction,
   rowClassName,
   animateRows = false,
   className,
@@ -67,7 +69,10 @@ export function DataTable<T extends RowData>({
 
   if (data.length === 0) {
     return (
-      <p className={cn(monoClass, "px-6 py-8 text-center")}>{emptyMessage}</p>
+      <div className="grid justify-items-center gap-3 px-6 py-10 text-center">
+        <p className={monoClass}>{emptyMessage}</p>
+        {emptyAction}
+      </div>
     );
   }
 
@@ -141,11 +146,16 @@ export function DataTable<T extends RowData>({
                   : undefined
               }
               tabIndex={href ? 0 : undefined}
-              onClick={() => {
-                if (href) router.push(href);
+              onClick={(event) => {
+                if (!href) return;
+                const target = event.target as HTMLElement | null;
+                if (target?.closest("[data-no-row-nav]")) return;
+                router.push(href);
               }}
               onKeyDown={(event) => {
                 if (href && (event.key === "Enter" || event.key === " ")) {
+                  const target = event.target as HTMLElement | null;
+                  if (target?.closest("[data-no-row-nav]")) return;
                   event.preventDefault();
                   router.push(href);
                 }

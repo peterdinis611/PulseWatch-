@@ -1,8 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MonitorForm } from "@/features/monitors/MonitorForm";
+import {
+  deleteMonitor,
+  duplicateMonitor,
+  runMonitorCheck,
+  setMonitorEnabled,
+  setMonitorMuted,
+  toastActionError,
+} from "@/features/monitors/monitor-actions";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormError } from "@/shared/ui/form";
@@ -13,24 +22,29 @@ import { formatAgo, formatMs, targetOf } from "@/shared/lib/format";
 import { gql, gqlMessage, subscribeGql } from "@/shared/graphql/client";
 import { toast } from "sonner";
 import {
-  DELETE_MONITOR,
   MONITOR_HISTORY_QUERY,
   MONITOR_QUERY,
   MONITOR_UPDATED_SUB,
+  NOTIFICATIONS_QUERY,
   QUICK_MONITOR_CHECK,
-  RUN_MONITOR,
   UPDATE_MONITOR,
 } from "@/shared/graphql/documents";
 import { monitorToForm } from "@/shared/lib/monitor-input";
+import { routes } from "@/shared/lib/routes";
 import type {
   Monitor,
   MonitorCheck,
   MonitorCheckResult,
   MonitorUptime,
+  Notification,
 } from "@/shared/lib/types";
 import { useSession } from "@/shared/session/SessionProvider";
-import { MonitorHistoryPanel } from "@/shared/ui/monitor-history-panel";
+import {
+  HISTORY_WINDOWS,
+  MonitorHistoryPanel,
+} from "@/shared/ui/monitor-history-panel";
 import { metaClass, monoClass, noteClass, splitClass } from "@/shared/ui/list";
+import { cn } from "@/lib/utils";
 
 export default function MonitorDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -45,23 +59,47 @@ export default function MonitorDetailPage() {
   );
   const [history, setHistory] = useState<MonitorCheck[]>([]);
   const [uptime, setUptime] = useState<MonitorUptime | null>(null);
+  const [hours, setHours] = useState<(typeof HISTORY_WINDOWS)[number]["hours"]>(
+    24,
+  );
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [relatedAlerts, setRelatedAlerts] = useState<Notification[]>([]);
 
-  async function loadHistory() {
-    const data = await gql<{
-      monitorChecks: MonitorCheck[];
-      monitorUptime: MonitorUptime;
-    }>(MONITOR_HISTORY_QUERY, { id, hours: 24 });
-    setHistory(data.monitorChecks);
-    setUptime(data.monitorUptime);
-  }
+  const loadHistory = useCallback(
+    async (windowHours = hours) => {
+      const data = await gql<{
+        monitorChecks: MonitorCheck[];
+        monitorUptime: MonitorUptime;
+      }>(MONITOR_HISTORY_QUERY, { id, hours: windowHours });
+      setHistory(data.monitorChecks);
+      setUptime(data.monitorUptime);
+    },
+    [hours, id],
+  );
+
+  const loadRelatedAlerts = useCallback(async () => {
+    try {
+      const data = await gql<{ notifications: Notification[] }>(
+        NOTIFICATIONS_QUERY,
+      );
+      setRelatedAlerts(
+        data.notifications.filter((item) => item.monitorId === id).slice(0, 5),
+      );
+    } catch {
+      setRelatedAlerts([]);
+    }
+  }, [id]);
 
   useEffect(() => {
     gql<{ monitor: Monitor }>(MONITOR_QUERY, { id }).then((data) =>
       setMonitor(data.monitor),
     );
-    void loadHistory();
-  }, [id]);
+    void loadRelatedAlerts();
+  }, [id, loadRelatedAlerts]);
+
+  useEffect(() => {
+    void loadHistory(hours);
+  }, [hours, loadHistory]);
 
   useEffect(() => {
     const stop = subscribeGql<{ monitorUpdated: Monitor }>(
@@ -69,29 +107,33 @@ export default function MonitorDetailPage() {
       (data) => {
         if (data.monitorUpdated.id !== id) return;
         setMonitor(data.monitorUpdated);
-        void loadHistory();
+        void loadHistory(hours);
       },
     );
     return stop;
-  }, [id]);
+  }, [id, hours, loadHistory]);
 
-  async function runSavedCheck() {
+  async function wrap(label: string, fn: () => Promise<void>) {
     setBusy(true);
     setError(null);
     try {
-      const data = await gql<{ runMonitorCheck: Monitor }>(RUN_MONITOR, { id });
-      setMonitor(data.runMonitorCheck);
-      setQuickResult(null);
+      await fn();
       await refresh();
-      await loadHistory();
-      toast.success(`Kontrola: ${data.runMonitorCheck.lastStatus}`);
     } catch (err) {
-      const message = gqlMessage(err);
-      setError(message);
-      toast.error("Kontrola zlyhala.", { description: message });
+      setError(toastActionError(label, err));
     } finally {
       setBusy(false);
     }
+  }
+
+  async function runSavedCheck() {
+    await wrap("Kontrola zlyhala.", async () => {
+      const next = await runMonitorCheck(id);
+      setMonitor(next);
+      setQuickResult(null);
+      await loadHistory(hours);
+      toast.success(`Kontrola: ${next.lastStatus}`);
+    });
   }
 
   async function runQuickCheck(input: Record<string, unknown>) {
@@ -118,10 +160,10 @@ export default function MonitorDetailPage() {
   async function remove() {
     setBusy(true);
     try {
-      await gql(DELETE_MONITOR, { id });
+      await deleteMonitor(id);
       await refresh();
       toast.success("Monitor zmazaný.");
-      router.replace("/monitors");
+      router.replace(routes.monitors);
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);
@@ -142,7 +184,7 @@ export default function MonitorDetailPage() {
 
   return (
     <>
-      <BackLink href="/monitors">Späť na monitory</BackLink>
+      <BackLink href={routes.monitors}>Späť na monitory</BackLink>
       <header className="mb-7 flex flex-col items-start justify-between gap-6 md:flex-row">
         <div>
           <p className={monoClass}>{monitor.type}</p>
@@ -150,23 +192,78 @@ export default function MonitorDetailPage() {
             {monitor.name}
           </h1>
           <p className={metaClass}>{targetOf(monitor)}</p>
+          <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
+            {!monitor.enabled ? <span>paused</span> : null}
+            {monitor.alertsMuted ? <span>muted</span> : null}
+            <span>
+              {formatMs(monitor.lastLatencyMs)} ·{" "}
+              {formatAgo(monitor.lastCheckedAt)}
+            </span>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2.5">
+        <div className="flex flex-wrap gap-2">
           <StatusBadge value={monitor.lastStatus} />
           <Button
-            disabled={busy || checking}
+            disabled={busy || checking || !monitor.enabled}
             type="button"
-            onClick={runSavedCheck}
+            onClick={() => void runSavedCheck()}
             size="lg"
           >
-            {busy ? "Kontrolujem…" : "Kontrola a uložiť"}
+            {busy ? "Kontrolujem…" : "Check now"}
+          </Button>
+          <Button
+            variant="outline"
+            disabled={busy || checking}
+            type="button"
+            size="lg"
+            onClick={() =>
+              void wrap("Zmena stavu zlyhala.", async () => {
+                const next = await setMonitorEnabled(id, !monitor.enabled);
+                setMonitor(next);
+                toast.success(monitor.enabled ? "Pozastavený." : "Spustený.");
+              })
+            }
+          >
+            {monitor.enabled ? "Pause" : "Resume"}
+          </Button>
+          <Button
+            variant="outline"
+            disabled={busy || checking}
+            type="button"
+            size="lg"
+            onClick={() =>
+              void wrap("Mute zlyhal.", async () => {
+                const next = await setMonitorMuted(id, !monitor.alertsMuted);
+                setMonitor(next);
+                toast.success(
+                  monitor.alertsMuted ? "Alerty zapnuté." : "Alerty stíšené.",
+                );
+              })
+            }
+          >
+            {monitor.alertsMuted ? "Unmute" : "Mute"}
+          </Button>
+          <Button
+            variant="outline"
+            disabled={busy || checking}
+            type="button"
+            size="lg"
+            onClick={() =>
+              void wrap("Duplikácia zlyhala.", async () => {
+                const copy = await duplicateMonitor(monitor);
+                toast.success("Kópia vytvorená.");
+                router.push(routes.monitor(copy.id));
+              })
+            }
+          >
+            Duplicate
           </Button>
           {confirmDelete ? (
             <Button
               variant="destructive"
               disabled={busy || checking}
               type="button"
-              onClick={remove}
+              onClick={() => void remove()}
               size="lg"
             >
               Naozaj zmazať
@@ -178,22 +275,66 @@ export default function MonitorDetailPage() {
               onClick={() => setConfirmDelete(true)}
               size="lg"
             >
-              Zmazať
+              Delete
             </Button>
           )}
         </div>
       </header>
-      <p className={`${monoClass} mb-6`}>
-        Uložený stav: {formatMs(monitor.lastLatencyMs)} ·{" "}
-        {formatAgo(monitor.lastCheckedAt)}
-        {monitor.lastError ? ` · ${monitor.lastError}` : ""}
-      </p>
+
+      {monitor.lastStatus === "DOWN" && monitor.lastError ? (
+        <div className="mb-6 border border-down/40 bg-card px-4 py-3 text-[15px]">
+          <p className="text-[13px] font-medium text-down">lastError</p>
+          <p className="mt-1 text-foreground">{monitor.lastError}</p>
+        </div>
+      ) : null}
+
       {quickResult ? <QuickCheckPanel result={quickResult} draft /> : null}
       <MonitorHistoryPanel
         checks={history}
         uptime={uptime}
+        hours={hours}
+        onHoursChange={(next) => {
+          const window = HISTORY_WINDOWS.find((item) => item.hours === next);
+          if (window) setHours(window.hours);
+        }}
         className="mb-8"
       />
+
+      {relatedAlerts.length > 0 ? (
+        <section className="mb-8 border border-border bg-card">
+          <header className="flex flex-wrap items-end justify-between gap-3 border-b border-border px-5 py-4">
+            <h2 className="font-heading text-[20px] font-black tracking-[-0.04em]">
+              Súvisiace upozornenia
+            </h2>
+            <Link
+              href={routes.alerts}
+              className="text-[13px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Všetky alerty →
+            </Link>
+          </header>
+          <ul>
+            {relatedAlerts.map((item) => (
+              <li
+                key={item.id}
+                className={cn(
+                  "border-b border-border px-5 py-3 last:border-b-0",
+                  !item.readAt && "border-l-2 border-l-primary",
+                )}
+              >
+                <p className="font-medium tracking-[-0.02em]">{item.title}</p>
+                <p className="mt-1 text-[14px] text-muted-foreground">
+                  {item.body}
+                </p>
+                <p className="mt-1 text-[12px] text-muted-foreground">
+                  {formatAgo(item.createdAt)} · {item.type}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       <FormError>{error}</FormError>
       <div className={splitClass()}>
         <MonitorForm
@@ -226,9 +367,8 @@ export default function MonitorDetailPage() {
           }}
         />
         <aside className={noteClass}>
-          Rýchla kontrola otestuje hodnoty vo formulári bez uloženia.
-          Kontrola a uložiť spustí check na uloženej konfigurácii a zapíše
-          výsledok.
+          Rýchla kontrola otestuje hodnoty vo formulári bez uloženia. Check now
+          spustí check na uloženej konfigurácii a zapíše výsledok do histórie.
         </aside>
       </div>
     </>

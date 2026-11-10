@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { MonitorList } from "@/features/monitors/MonitorList";
 import { Button } from "@/components/ui/button";
 import { EmptyState, PageHeader } from "@/shared/ui/page-header";
+import { routes } from "@/shared/lib/routes";
 import { useSession } from "@/shared/session";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const HIGHLIGHT_KEY = "pw.highlightMonitor";
 
@@ -25,32 +27,41 @@ export default function MonitorsPage() {
   return (
     <>
       <PageHeader
-        kicker="Monitory"
-        title="Deväť typov."
-        lede="HTTP, Redis, databáza, TCP, SSL, DNS, SMTP, Kafka, gRPC. Hľadaj podľa názvu alebo odfiltruj stav."
+        title="Deväť typov"
+        lede="Celá flota na jednom mieste. Filtre ostávajú v URL."
         actions={
           <Button asChild size="lg">
-            <Link href="/monitors/new">Nový monitor</Link>
+            <Link href={routes.monitorNew}>Nový monitor</Link>
           </Button>
         }
       />
       {monitors.length === 0 ? (
         <EmptyState
-          title="Žiadny monitor."
+          title="Žiadny monitor"
           action={
             <Button asChild size="lg">
-              <Link href="/monitors/new">Pridať HTTP monitor</Link>
+              <Link href={routes.monitorNew}>Pridať HTTP monitor</Link>
             </Button>
           }
         >
           Začni GET na endpoint, ktorý má zostať nažive.
         </EmptyState>
       ) : (
-        <MonitorList
-          monitors={monitors}
-          filterable
-          highlightId={highlightId}
-        />
+        <Suspense
+          fallback={
+            <div className="grid gap-3 border border-border p-6">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-2/3" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          }
+        >
+          <MonitorList
+            monitors={monitors}
+            filterable
+            highlightId={highlightId}
+          />
+        </Suspense>
       )}
     </>
   );

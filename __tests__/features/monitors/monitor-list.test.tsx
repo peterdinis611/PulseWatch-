@@ -1,11 +1,32 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { MonitorList } from "@/features/monitors/MonitorList";
 import { mockMonitor } from "@tests/fixtures";
 
+const replace = vi.fn();
+const searchParams = new URLSearchParams();
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace, back: vi.fn() }),
+  useSearchParams: () => searchParams,
+}));
+
+vi.mock("@/shared/session", () => ({
+  useSession: () => ({
+    refresh: vi.fn(),
+    monitors: [],
+    ready: true,
+    token: "t",
+    user: null,
+    unread: 0,
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  }),
+}));
+
+vi.mock("@/features/monitors/FleetBanner", () => ({
+  FleetBanner: () => <div data-testid="fleet-banner">Fleet 24h</div>,
 }));
 
 describe("MonitorList", () => {
@@ -30,7 +51,7 @@ describe("MonitorList", () => {
     const user = userEvent.setup();
 
     render(<MonitorList monitors={monitors} filterable />);
-    await user.click(screen.getByRole("radio", { name: "REDIS" }));
+    await user.selectOptions(screen.getByLabelText("Typ"), "REDIS");
 
     expect(screen.getByText("Redis")).toBeInTheDocument();
     expect(screen.queryByText("Pdf App")).not.toBeInTheDocument();
@@ -59,13 +80,31 @@ describe("MonitorList", () => {
     expect(screen.queryByText("Mystery")).not.toBeInTheDocument();
   });
 
-  it("shows stat pills and count in fleet mode", () => {
+  it("shows status facets with counts and fleet strip", () => {
     render(<MonitorList monitors={monitors} filterable />);
 
     expect(screen.getByText("3 / 3")).toBeInTheDocument();
-    expect(screen.getAllByText("Hore").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Dole").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Neznáme").length).toBeGreaterThan(0);
+    expect(screen.getByTestId("fleet-banner")).toBeInTheDocument();
+
+    const status = screen.getByRole("radiogroup", { name: "Stav" });
+    expect(within(status).getByRole("radio", { name: "ALL" })).toHaveTextContent("3");
+    expect(within(status).getByRole("radio", { name: "UP" })).toHaveTextContent("1");
+    expect(within(status).getByRole("radio", { name: "DOWN" })).toHaveTextContent("1");
+    expect(within(status).getByRole("radio", { name: "UNKNOWN" })).toHaveTextContent("1");
+  });
+
+  it("clears filters from empty state", async () => {
+    const user = userEvent.setup();
+
+    render(<MonitorList monitors={monitors} filterable />);
+    await user.type(
+      screen.getAllByPlaceholderText(/hľadať názov/i)[0],
+      "kafka-neexistuje",
+    );
+
+    expect(screen.getByText("Nič nesedí na filter.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /vyčistiť filtre/i }));
+    expect(screen.getByText("Pdf App")).toBeInTheDocument();
   });
 
   it("renders preview header and link to all monitors", () => {

@@ -56,3 +56,11 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 npm test
 npm run lint
 ```
+
+## Monitory
+
+- Zoznam: `/monitors` — filtre v URL (`?status=DOWN&type=HTTP&enabled=PAUSED&muted=MUTED&q=…`).
+- Overview štatistiky otvárajú predvyfiltrovaný zoznam.
+- Riadok: check / pause / mute / duplicate / delete; multi-select bulk bar.
+- Detail: história 24h / 7d / 30d, súvisiace alerty, `lastError` pri DOWN.
+- Demo účet: `demo@pulsewatch.dev` / `demo1234` (backend `npm run prisma:seed`).

@@ -14,9 +14,11 @@ import {
 
 export function FormField({
   label,
+  hint,
   children,
 }: {
   label: string;
+  hint?: string;
   children: ReactNode;
 }) {
   return (
@@ -25,6 +27,9 @@ export function FormField({
         {label}
       </Label>
       {children}
+      {hint ? (
+        <p className="text-[12px] leading-snug text-muted-foreground">{hint}</p>
+      ) : null}
     </div>
   );
 }
@@ -37,18 +42,28 @@ export function CheckRow({
   checked,
   onCheckedChange,
   children,
+  description,
 }: {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   children: ReactNode;
+  description?: string;
 }) {
   return (
-    <label className="mb-4 flex items-center gap-2.5 text-[16px]">
+    <label className="mb-3 flex items-start gap-3 text-[15px] last:mb-0">
       <Checkbox
+        className="mt-0.5"
         checked={checked}
         onCheckedChange={(value) => onCheckedChange(value === true)}
       />
-      {children}
+      <span className="min-w-0">
+        <span className="block font-medium leading-snug">{children}</span>
+        {description ? (
+          <span className="mt-1 block text-[13px] leading-snug text-muted-foreground">
+            {description}
+          </span>
+        ) : null}
+      </span>
     </label>
   );
 }

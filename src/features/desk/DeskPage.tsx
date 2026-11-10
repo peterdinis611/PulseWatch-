@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { Constellation } from "@/features/desk/Constellation";
 import { MonitorList } from "@/features/monitors/MonitorList";
@@ -11,7 +12,7 @@ import { gql } from "@/shared/graphql/client";
 import { DESK_QUERY } from "@/shared/graphql/documents";
 import type { FleetUptime, StressTest } from "@/shared/lib/types";
 import { useSession } from "@/shared/session";
-import { routes } from "@/shared/lib/routes";
+import { monitorsWith, routes } from "@/shared/lib/routes";
 import { listPanelClass } from "@/shared/ui/list";
 import { cn } from "@/lib/utils";
 
@@ -65,20 +66,14 @@ export default function DeskPage() {
             suffix={`/ ${monitors.length}`}
             tone="up"
             delay={0}
-            onClick={() => router.push(routes.monitors)}
+            onClick={() => router.push(monitorsWith({ status: "UP" }))}
           />
           <DeskStat
             label="Dole"
             value={down}
             tone={down ? "down" : "muted"}
             delay={1}
-            onClick={() => {
-              if (downMonitors[0]) {
-                router.push(routes.monitor(downMonitors[0].id));
-              } else {
-                router.push(routes.monitors);
-              }
-            }}
+            onClick={() => router.push(monitorsWith({ status: "DOWN" }))}
           />
           <DeskStat
             label="Uptime 24h"
@@ -109,14 +104,22 @@ export default function DeskPage() {
           Pridaj HTTP monitor na službu, ktorú chceš vidieť v konštelácii.
         </EmptyState>
       ) : (
-        <MonitorList
-          monitors={previewMonitors}
-          variant="preview"
-          previewTitle={
-            downMonitors.length > 0 ? "Monitory dole" : "Posledné kontroly"
-          }
-          showAllHref={monitors.length > 6 ? routes.monitors : undefined}
-        />
+        <Suspense fallback={null}>
+          <MonitorList
+            monitors={previewMonitors}
+            variant="preview"
+            previewTitle={
+              downMonitors.length > 0 ? "Monitory dole" : "Posledné kontroly"
+            }
+            showAllHref={
+              downMonitors.length > 0
+                ? monitorsWith({ status: "DOWN" })
+                : monitors.length > 6
+                  ? routes.monitors
+                  : undefined
+            }
+          />
+        </Suspense>
       )}
     </>
   );
