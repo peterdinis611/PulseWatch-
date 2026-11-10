@@ -131,10 +131,10 @@ export default function AlertsPage() {
                 type="button"
                 onClick={() => setFilter(value)}
                 className={cn(
-                  "rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors",
+                  "border-b-2 px-1 pb-2 text-[14px] transition-colors",
                   filter === value
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-border/70 text-muted-foreground hover:text-foreground",
+                    ? "border-foreground font-medium text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
                 {value === "all" ? "Všetky" : "Neprečítané"}
@@ -227,7 +227,7 @@ export default function AlertsPage() {
         <button
           type="button"
           className={`${monoClass} text-muted-foreground underline-offset-4 hover:text-foreground hover:underline`}
-          onClick={() => router.push("/desk")}
+          onClick={() => router.push("/overview")}
         >
           ← Späť na prehľad
         </button>

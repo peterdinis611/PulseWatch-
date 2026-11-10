@@ -21,7 +21,7 @@ export function FormField({
 }) {
   return (
     <div className="mb-4 grid gap-2">
-      <Label className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+      <Label className="text-[13px] font-medium text-muted-foreground">
         {label}
       </Label>
       {children}

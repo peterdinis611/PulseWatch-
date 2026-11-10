@@ -38,6 +38,13 @@ const nextConfig: NextConfig = {
       fullUrl: !isProd,
     },
   },
+  async redirects() {
+    return [
+      { source: "/vstup", destination: "/login", permanent: true },
+      { source: "/desk", destination: "/overview", permanent: true },
+      { source: "/desk/:path*", destination: "/overview/:path*", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

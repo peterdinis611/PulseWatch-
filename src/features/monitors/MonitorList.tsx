@@ -139,19 +139,18 @@ export function MonitorList({
         <div className={listToolbarClass()}>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
-                {previewKicker ?? "Na rade"}
-              </p>
-              <h2 className="mt-1 font-heading text-[clamp(24px,3vw,32px)] leading-none tracking-[-0.06em]">
+              <h2 className="font-heading text-[22px] font-black tracking-[-0.04em]">
                 {previewTitle ?? "Posledné kontroly"}
               </h2>
+              {previewKicker ? (
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  {previewKicker}
+                </p>
+              ) : null}
             </div>
             <Link
               href={showAllHref ?? "/monitors"}
-              className={cn(
-                monoClass,
-                "inline-flex items-center gap-1 rounded-full border border-border/70 px-3 py-1.5 transition-colors hover:border-primary/40 hover:text-foreground",
-              )}
+              className="text-[14px] text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
             >
               Všetky monitory →
             </Link>
@@ -175,16 +174,18 @@ function StatPill({
   tone: "up" | "down" | "muted";
 }) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em]",
-        tone === "up" && "border-up/25 bg-up/8 text-up",
-        tone === "down" && "border-down/25 bg-down/8 text-down",
-        tone === "muted" && "border-border/70 bg-background/40 text-muted-foreground",
-      )}
-    >
+    <span className="inline-flex items-baseline gap-2 text-[13px] text-muted-foreground">
       {label}
-      <b className="font-heading text-sm tracking-[-0.04em]">{value}</b>
+      <b
+        className={cn(
+          "font-heading text-[15px] font-black tabular-nums tracking-[-0.03em]",
+          tone === "up" && "text-up",
+          tone === "down" && "text-down",
+          tone === "muted" && "text-foreground",
+        )}
+      >
+        {value}
+      </b>
     </span>
   );
 }

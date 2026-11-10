@@ -36,7 +36,7 @@ export function LandingConstellation() {
           y1={STARS[i].y}
           x2={star.x}
           y2={star.y}
-          stroke="rgba(243,239,228,0.16)"
+          stroke="rgba(233,237,243,0.14)"
           strokeWidth="1"
         />
       ))}
@@ -59,9 +59,9 @@ export function LandingConstellation() {
             x={star.x}
             y={star.y + 28}
             textAnchor="middle"
-            fill="rgba(243,239,228,0.62)"
-            fontSize="11"
-            fontFamily="Azeret Mono, ui-monospace, monospace"
+            fill="rgba(233,237,243,0.65)"
+            fontSize="12"
+            fontFamily="var(--font-body), Epilogue, sans-serif"
           >
             {star.name}
           </text>

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/shared/seo/site";
+import { routes } from "@/shared/lib/routes";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const origin = getSiteUrl();
@@ -12,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${origin}/vstup`,
+      url: `${origin}${routes.login}`,
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.6,

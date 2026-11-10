@@ -53,17 +53,9 @@ export function Constellation({ monitors }: { monitors: Monitor[] }) {
     >
       <defs>
         <radialGradient id="constellation-vignette" cx="50%" cy="45%" r="70%">
-          <stop offset="0%" stopColor="rgba(232,255,71,0.08)" />
-          <stop offset="55%" stopColor="rgba(111,242,197,0.03)" />
-          <stop offset="100%" stopColor="rgba(7,8,12,0)" />
+          <stop offset="0%" stopColor="rgba(90,155,252,0.07)" />
+          <stop offset="100%" stopColor="rgba(10,13,20,0)" />
         </radialGradient>
-        <filter id="node-glow" x="-80%" y="-80%" width="260%" height="260%">
-          <feGaussianBlur stdDeviation="4" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
       </defs>
 
       <rect width="1000" height="240" fill="url(#constellation-vignette)" />
@@ -74,7 +66,7 @@ export function Constellation({ monitors }: { monitors: Monitor[] }) {
           cx={star.x}
           cy={star.y}
           r={star.r}
-          fill="rgba(243,239,228,0.9)"
+          fill="rgba(233,237,243,0.85)"
           opacity={star.opacity}
         />
       ))}
@@ -94,7 +86,7 @@ export function Constellation({ monitors }: { monitors: Monitor[] }) {
           y1={points[i].y}
           x2={point.x}
           y2={point.y}
-          stroke="rgba(243,239,228,0.14)"
+          stroke="rgba(233,237,243,0.12)"
           strokeWidth="1"
         />
       ))}
@@ -122,55 +114,24 @@ export function Constellation({ monitors }: { monitors: Monitor[] }) {
             }}
           >
             <title>{`${point.name} · ${point.status}`}</title>
+            <circle cx={point.x} cy={point.y} r="18" fill={tone} opacity="0.12" />
+            <circle cx={point.x} cy={point.y} r="5" fill={tone} />
             <circle
               cx={point.x}
               cy={point.y}
-              r="22"
-              fill={tone}
-              opacity="0.08"
-              filter="url(#node-glow)"
-            >
-              {point.status === "UP" ? (
-                <>
-                  <animate
-                    attributeName="r"
-                    values="22;28;22"
-                    dur="4s"
-                    repeatCount="indefinite"
-                  />
-                  <animate
-                    attributeName="opacity"
-                    values="0.08;0.18;0.08"
-                    dur="4s"
-                    repeatCount="indefinite"
-                  />
-                </>
-              ) : null}
-            </circle>
-            <circle
-              cx={point.x}
-              cy={point.y}
-              r="6"
-              fill={tone}
-              filter="url(#node-glow)"
-            />
-            <circle
-              cx={point.x}
-              cy={point.y}
-              r="11"
+              r="10"
               fill="none"
               stroke={tone}
-              strokeOpacity="0.35"
+              strokeOpacity="0.4"
               strokeWidth="1"
             />
             <text
               x={point.x}
-              y={point.y + 34}
+              y={point.y + 32}
               textAnchor="middle"
-              fill="rgba(243,239,228,0.72)"
-              fontSize="11"
-              fontFamily="var(--font-mono), Azeret Mono, monospace"
-              letterSpacing="0.08em"
+              fill="rgba(233,237,243,0.7)"
+              fontSize="12"
+              fontFamily="var(--font-body), Epilogue, sans-serif"
             >
               {point.name.slice(0, 18)}
             </text>

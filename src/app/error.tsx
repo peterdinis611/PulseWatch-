@@ -28,7 +28,7 @@ export default function Error({
             Skúsiť znova
           </Button>
           <Button asChild variant="outline" size="lg">
-            <Link href="/desk">Prehľad</Link>
+            <Link href="/overview">Prehľad</Link>
           </Button>
           <Button asChild variant="ghost" size="lg">
             <Link href="/">Domov</Link>

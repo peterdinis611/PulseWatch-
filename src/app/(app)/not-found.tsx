@@ -18,7 +18,7 @@ export default function AppNotFound() {
       actions={
         <>
           <Button asChild size="lg">
-            <Link href="/desk">Prehľad</Link>
+            <Link href="/overview">Prehľad</Link>
           </Button>
           <Button asChild variant="outline" size="lg">
             <Link href="/monitors">Monitory</Link>

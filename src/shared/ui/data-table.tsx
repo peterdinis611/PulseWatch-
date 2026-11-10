@@ -86,7 +86,7 @@ export function DataTable<T extends RowData>({
               return (
                 <TableHead
                   key={header.id}
-                  className="hidden h-auto px-6 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground first:pl-6 last:pr-6 md:table-cell [&:nth-child(2)]:pl-4"
+                  className="hidden h-auto px-5 py-2.5 text-[13px] font-medium text-muted-foreground first:pl-5 last:pr-5 md:table-cell"
                 >
                   {header.isPlaceholder ? null : canSort ? (
                     <button

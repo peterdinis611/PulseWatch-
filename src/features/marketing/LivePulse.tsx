@@ -19,23 +19,34 @@ export function LivePulse() {
     return () => window.clearInterval(t);
   }, []);
 
+  const apiOk = health?.status === "ok" || health?.status === "healthy";
+  const dbOk = Boolean(health?.database && health.database !== "down");
+
   return (
-    <dl className="grid grid-cols-3 gap-4 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+    <dl className="grid grid-cols-1 gap-6 sm:grid-cols-3">
       <div>
-        <dt>Čas</dt>
-        <dd className="mt-1.5 font-heading text-[22px] font-extrabold tracking-[-0.04em] text-foreground normal-case">
+        <dt className="text-[13px] text-muted-foreground">Čas</dt>
+        <dd className="mt-1 font-heading text-[28px] font-black tracking-[-0.04em] tabular-nums">
           {clock}
         </dd>
       </div>
       <div>
-        <dt>API</dt>
-        <dd className="mt-1.5 font-heading text-[22px] font-extrabold tracking-[-0.04em] text-foreground normal-case">
+        <dt className="text-[13px] text-muted-foreground">API</dt>
+        <dd
+          className={`mt-1 font-heading text-[28px] font-black tracking-[-0.04em] ${
+            health ? (apiOk ? "text-up" : "text-down") : "text-foreground"
+          }`}
+        >
           {health?.status ?? "offline"}
         </dd>
       </div>
       <div>
-        <dt>Databáza</dt>
-        <dd className="mt-1.5 font-heading text-[22px] font-extrabold tracking-[-0.04em] text-foreground normal-case">
+        <dt className="text-[13px] text-muted-foreground">Databáza</dt>
+        <dd
+          className={`mt-1 font-heading text-[28px] font-black tracking-[-0.04em] ${
+            health ? (dbOk ? "text-up" : "text-down") : "text-foreground"
+          }`}
+        >
           {health?.database ?? "—"}
         </dd>
       </div>

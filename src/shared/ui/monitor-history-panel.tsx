@@ -19,34 +19,36 @@ export function MonitorHistoryPanel({
   return (
     <section
       className={cn(
-        "animate-rise overflow-hidden rounded-xl border border-border/70 bg-card/60",
+        "animate-rise overflow-hidden rounded-lg border border-border bg-card",
         className,
       )}
     >
-      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border/60 px-5 py-4">
+      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border px-5 py-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+          <p className="text-[13px] text-muted-foreground">
             Posledných {uptime?.periodHours ?? 24}h
           </p>
-          <h2 className="mt-0.5 font-heading text-2xl tracking-[-0.05em]">
+          <h2 className="mt-0.5 font-heading text-[22px] font-black tracking-[-0.04em]">
             História kontrol
           </h2>
         </div>
         {uptime ? (
-          <dl className="flex flex-wrap gap-5 font-mono text-[10px] uppercase tracking-[0.14em]">
+          <dl className="flex flex-wrap gap-5 text-[13px]">
             <div>
               <dt className="text-muted-foreground">Uptime</dt>
-              <dd className="mt-1 text-lg text-primary">{uptime.uptimePercent}%</dd>
+              <dd className="mt-1 font-heading text-lg font-black tabular-nums text-up">
+                {uptime.uptimePercent}%
+              </dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Kontroly</dt>
-              <dd className="mt-1 text-lg text-foreground">
+              <dd className="mt-1 font-heading text-lg font-black tabular-nums text-foreground">
                 {uptime.upChecks}/{uptime.totalChecks}
               </dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Priem. latencia</dt>
-              <dd className="mt-1 text-lg text-foreground">
+              <dd className="mt-1 font-heading text-lg font-black tabular-nums text-foreground">
                 {uptime.avgLatencyMs != null ? formatMs(uptime.avgLatencyMs) : "—"}
               </dd>
             </div>
@@ -130,7 +132,7 @@ function LatencyChart({
 
 function StatusTimeline({ checks }: { checks: MonitorCheck[] }) {
   return (
-    <div className="mt-4 flex h-2 overflow-hidden rounded-full border border-border/60">
+    <div className="mt-4 flex h-2 overflow-hidden rounded-sm border border-border">
       {checks.map((check) => (
         <div
           key={check.id}

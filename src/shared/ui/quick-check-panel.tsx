@@ -16,18 +16,18 @@ export function QuickCheckPanel({
   return (
     <section
       className={cn(
-        "animate-rise mb-6 rounded-[20px] border px-4 py-4 md:px-5",
+        "animate-rise mb-6 rounded-lg border px-4 py-4 md:px-5",
         result.status === "UP"
-          ? "border-up/30 bg-up/8"
+          ? "border-up/35 bg-transparent"
           : result.status === "DOWN"
-            ? "border-down/30 bg-down/8"
-            : "border-border/70 bg-card/50",
+            ? "border-down/35 bg-transparent"
+            : "border-border bg-card",
         className,
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+          <p className="text-[13px] text-muted-foreground">
             {draft ? "Rýchla kontrola" : "Kontrola"}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-3">

@@ -82,8 +82,7 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader
-        kicker="Nastavenia"
-        title="Defaulty floty."
+        title="Defaulty floty"
         lede="Interval 10–3600 s, timeout 1000–30000 ms. Nové monitory si ich zoberú, ak ich vo formulári nevyplníš."
       />
       <div className={splitClass()}>
@@ -122,7 +121,7 @@ export default function SettingsPage() {
             Upozornenie pri recovery
           </CheckRow>
 
-          <p className="mb-3 mt-8 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+          <p className="mb-3 mt-8 text-[14px] font-medium text-foreground">
             Údržba floty
           </p>
           <CheckRow
@@ -140,7 +139,7 @@ export default function SettingsPage() {
             />
           </FormField>
 
-          <p className="mb-3 mt-8 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+          <p className="mb-3 mt-8 text-[14px] font-medium text-foreground">
             Externé kanály
           </p>
           <FormField label="Webhook URL (JSON POST)">

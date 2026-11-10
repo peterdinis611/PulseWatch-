@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Activity, ArrowDownRight, ArrowUpRight, Zap } from "lucide-react";
 import { Constellation } from "@/features/desk/Constellation";
 import { MonitorList } from "@/features/monitors/MonitorList";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { gql } from "@/shared/graphql/client";
 import { DESK_QUERY } from "@/shared/graphql/documents";
 import type { FleetUptime, StressTest } from "@/shared/lib/types";
 import { useSession } from "@/shared/session";
+import { routes } from "@/shared/lib/routes";
 import { listPanelClass } from "@/shared/ui/list";
 import { cn } from "@/lib/utils";
 
@@ -39,81 +39,70 @@ export default function DeskPage() {
   return (
     <>
       <PageHeader
-        kicker="Prehľad"
-        title="Čo je hore."
+        title="Čo je hore"
         lede="Bod v konštelácii je monitor. Klikni naň, alebo prejdi do zoznamu."
         actions={
           <>
             <Button asChild size="lg">
-              <Link href="/monitors/new">Nový monitor</Link>
+              <Link href={routes.monitorNew}>Nový monitor</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="/load/new">Nová záťaž</Link>
+              <Link href={routes.loadNew}>Nová záťaž</Link>
             </Button>
           </>
         }
       />
 
-      <section
-        className={cn(
-          listPanelClass("animate-rise mb-8"),
-          "shadow-[0_28px_90px_rgba(0,0,0,0.34)]",
-        )}
-      >
+      <section className={cn(listPanelClass("animate-rise mb-8"))}>
         <div className="relative overflow-hidden px-1 pt-1 pb-0 md:px-3">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,color-mix(in_srgb,var(--primary)_10%,transparent),transparent_62%)]"
-          />
           <Constellation monitors={monitors} />
         </div>
 
-        <div className="grid grid-cols-1 gap-px border-t border-border/60 bg-border/40 sm:grid-cols-2 lg:grid-cols-4">
-          <DeskStatCard
+        <div className="grid grid-cols-1 gap-px border-t border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+          <DeskStat
             label="Hore"
             value={up}
             suffix={`/ ${monitors.length}`}
             tone="up"
-            icon={ArrowUpRight}
             delay={0}
-            onClick={() => router.push("/monitors")}
+            onClick={() => router.push(routes.monitors)}
           />
-          <DeskStatCard
+          <DeskStat
             label="Dole"
             value={down}
             tone={down ? "down" : "muted"}
-            icon={ArrowDownRight}
             delay={1}
             onClick={() => {
-              if (downMonitors[0]) router.push(`/monitors/${downMonitors[0].id}`);
-              else router.push("/monitors");
+              if (downMonitors[0]) {
+                router.push(routes.monitor(downMonitors[0].id));
+              } else {
+                router.push(routes.monitors);
+              }
             }}
           />
-          <DeskStatCard
+          <DeskStat
             label="Uptime 24h"
             value={uptimeLabel}
             tone="up"
-            icon={Activity}
             delay={2}
-            onClick={() => router.push("/monitors")}
+            onClick={() => router.push(routes.monitors)}
           />
-          <DeskStatCard
+          <DeskStat
             label="k6 beží"
             value={running}
             tone="run"
-            icon={Zap}
             delay={3}
-            onClick={() => router.push("/load")}
+            onClick={() => router.push(routes.load)}
           />
         </div>
       </section>
 
       {monitors.length === 0 ? (
         <EmptyState
-          title="Zatiaľ ticho."
+          title="Zatiaľ ticho"
           action={
             <Button asChild size="lg">
-              <Link href="/monitors/new">Pridať monitor</Link>
+              <Link href={routes.monitorNew}>Pridať monitor</Link>
             </Button>
           }
         >
@@ -123,23 +112,21 @@ export default function DeskPage() {
         <MonitorList
           monitors={previewMonitors}
           variant="preview"
-          previewKicker={downMonitors.length > 0 ? "Pozor" : "Na rade"}
           previewTitle={
             downMonitors.length > 0 ? "Monitory dole" : "Posledné kontroly"
           }
-          showAllHref={monitors.length > 6 ? "/monitors" : undefined}
+          showAllHref={monitors.length > 6 ? routes.monitors : undefined}
         />
       )}
     </>
   );
 }
 
-function DeskStatCard({
+function DeskStat({
   label,
   value,
   suffix,
   tone,
-  icon: Icon,
   delay,
   onClick,
 }: {
@@ -147,73 +134,34 @@ function DeskStatCard({
   value: number | string;
   suffix?: string;
   tone: "up" | "down" | "run" | "muted";
-  icon: typeof ArrowUpRight;
   delay: number;
   onClick: () => void;
 }) {
-  const toneStyles = {
-    up: {
-      chip: "text-up border-up/25 bg-up/10",
-      glow: "from-up/14 via-up/4 to-transparent",
-      value: "text-foreground",
-    },
-    down: {
-      chip: "text-down border-down/25 bg-down/10",
-      glow: "from-down/16 via-down/5 to-transparent",
-      value: "text-down",
-    },
-    run: {
-      chip: "text-run border-run/25 bg-run/10",
-      glow: "from-run/14 via-run/4 to-transparent",
-      value: "text-foreground",
-    },
-    muted: {
-      chip: "text-muted-foreground border-border/70 bg-background/35",
-      glow: "from-foreground/6 via-transparent to-transparent",
-      value: "text-foreground",
-    },
-  }[tone];
-
   return (
     <button
       type="button"
       className={cn(
-        "animate-rise group relative overflow-hidden bg-card/80 px-5 py-5 text-left transition-[background-color,transform] duration-300 hover:bg-card",
+        "animate-rise bg-card px-5 py-5 text-left transition-colors hover:bg-background",
         "focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
       )}
-      style={{ animationDelay: `${delay * 70}ms` }}
+      style={{ animationDelay: `${delay * 60}ms` }}
       onClick={onClick}
     >
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-100",
-          toneStyles.glow,
-        )}
-      />
-      <div className="relative flex items-start justify-between gap-3">
-        <span
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em]",
-            toneStyles.chip,
-          )}
-        >
-          <Icon className="size-3" aria-hidden />
-          {label}
-        </span>
-        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-          Otvoriť
-        </span>
-      </div>
+      <span className="block text-[13px] text-muted-foreground">{label}</span>
       <b
         className={cn(
-          "relative mt-3 block font-heading text-[clamp(36px,4vw,46px)] leading-[0.88] tracking-[-0.08em]",
-          toneStyles.value,
+          "mt-2 block font-heading text-[clamp(32px,3.5vw,42px)] font-black leading-none tracking-[-0.05em] tabular-nums",
+          tone === "up" && "text-up",
+          tone === "down" && "text-down",
+          tone === "run" && "text-run",
+          tone === "muted" && "text-foreground",
         )}
       >
         {value}
         {suffix ? (
-          <span className="text-[22px] text-muted-foreground">{suffix}</span>
+          <span className="text-[20px] font-medium text-muted-foreground">
+            {suffix}
+          </span>
         ) : null}
       </b>
     </button>

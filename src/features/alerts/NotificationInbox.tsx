@@ -136,10 +136,10 @@ export function NotificationInbox() {
       >
         <header className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+            <p className="font-heading text-lg font-black tracking-[-0.04em]">
               Upozornenia
             </p>
-            <p className="mt-0.5 font-heading text-lg tracking-[-0.04em]">
+            <p className="mt-0.5 text-[13px] text-muted-foreground">
               Čo flota povedala.
             </p>
           </div>
@@ -155,7 +155,7 @@ export function NotificationInbox() {
             </Button>
             <Link
               href="/alerts"
-              className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground hover:text-primary"
+              className="text-[13px] text-muted-foreground hover:text-foreground"
               onClick={() => setOpen(false)}
             >
               Celá história →
@@ -194,14 +194,14 @@ export function NotificationInbox() {
                       <p className="font-heading text-sm tracking-[-0.03em]">
                         {item.title}
                       </p>
-                      <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                      <span className="shrink-0 text-[12px] text-muted-foreground">
                         {item.readAt ? "READ" : "NEW"}
                       </span>
                     </div>
                     <p className="mt-0.5 line-clamp-2 text-[13px] text-muted-foreground">
                       {item.body}
                     </p>
-                    <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+                    <p className="mt-1 text-[12px] text-muted-foreground">
                       {formatAgo(item.createdAt)}
                     </p>
                   </div>
@@ -243,7 +243,7 @@ export function NotificationInbox() {
           <footer className="border-t border-border px-4 py-2 text-center">
             <button
               type="button"
-              className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary"
+              className="text-[13px] text-primary"
               onClick={() => {
                 setOpen(false);
                 router.push("/alerts");

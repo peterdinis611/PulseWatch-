@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Azeret_Mono, Fraunces, Unbounded } from "next/font/google";
+import { Epilogue, IBM_Plex_Mono } from "next/font/google";
 import { SessionProvider } from "@/shared/session/SessionProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
@@ -12,22 +12,21 @@ import {
 } from "@/shared/seo/site";
 import "./globals.css";
 
-const display = Unbounded({
+const display = Epilogue({
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "700", "800"],
+  weight: ["400", "500", "900"],
   variable: "--font-display",
   display: "swap",
 });
 
-const body = Fraunces({
+const body = Epilogue({
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
+  weight: ["400", "500"],
   variable: "--font-body",
   display: "swap",
 });
 
-const mono = Azeret_Mono({
+const mono = IBM_Plex_Mono({
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500"],
   variable: "--font-mono",
@@ -81,7 +80,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#07080c",
+  themeColor: "#0a0d14",
   colorScheme: "dark",
 };
 

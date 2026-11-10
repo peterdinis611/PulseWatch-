@@ -16,19 +16,17 @@ export default function GlobalError({
           display: "grid",
           placeItems: "center",
           padding: "2rem",
-          background: "#07080c",
-          color: "#f3efe4",
-          fontFamily: "system-ui, sans-serif",
+          background: "#0a0d14",
+          color: "#e9edf3",
+          fontFamily: "Epilogue, system-ui, sans-serif",
         }}
       >
         <main style={{ maxWidth: "640px" }}>
           <p
             style={{
               margin: 0,
-              fontSize: "11px",
-              letterSpacing: "0.22em",
-              textTransform: "uppercase",
-              color: "#e8ff47",
+              fontSize: "13px",
+              color: "#5a9bfc",
             }}
           >
             Kritický výpadok
@@ -38,8 +36,8 @@ export default function GlobalError({
               margin: "12px 0 0",
               fontSize: "clamp(88px, 18vw, 148px)",
               lineHeight: 0.82,
-              fontWeight: 800,
-              letterSpacing: "-0.08em",
+              fontWeight: 900,
+              letterSpacing: "-0.05em",
             }}
           >
             500
@@ -49,12 +47,13 @@ export default function GlobalError({
               margin: "8px 0 0",
               fontSize: "clamp(28px, 4vw, 42px)",
               lineHeight: 0.95,
-              letterSpacing: "-0.06em",
+              letterSpacing: "-0.04em",
+              fontWeight: 900,
             }}
           >
             Aplikácia spadla.
           </h1>
-          <p style={{ margin: "16px 0 0", color: "#9a9588", fontSize: "18px" }}>
+          <p style={{ margin: "16px 0 0", color: "#8891a1", fontSize: "18px" }}>
             Root layout sa nepodarilo načítať. Skús obnoviť stránku.
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "32px" }}>
@@ -63,10 +62,10 @@ export default function GlobalError({
               onClick={reset}
               style={{
                 border: "none",
-                borderRadius: "999px",
+                borderRadius: "8px",
                 padding: "10px 18px",
-                background: "#e8ff47",
-                color: "#14160a",
+                background: "#5a9bfc",
+                color: "#0a0d14",
                 fontWeight: 600,
                 cursor: "pointer",
               }}
@@ -76,10 +75,10 @@ export default function GlobalError({
             <a
               href="/"
               style={{
-                borderRadius: "999px",
+                borderRadius: "8px",
                 padding: "10px 18px",
-                border: "1px solid rgba(243,239,228,0.2)",
-                color: "#f3efe4",
+                border: "1px solid rgba(233,237,243,0.2)",
+                color: "#e9edf3",
                 textDecoration: "none",
               }}
             >
@@ -87,7 +86,7 @@ export default function GlobalError({
             </a>
           </div>
           {error.digest ? (
-            <p style={{ marginTop: "24px", color: "#9a9588", fontSize: "12px" }}>
+            <p style={{ marginTop: "24px", color: "#8891a1", fontSize: "12px" }}>
               Digest: {error.digest}
             </p>
           ) : null}

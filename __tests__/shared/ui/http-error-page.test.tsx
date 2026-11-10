@@ -21,9 +21,9 @@ describe("HttpErrorPage", () => {
       "href",
       "/",
     );
-    expect(screen.getByRole("link", { name: "Vstup" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Prihlásenie" })).toHaveAttribute(
       "href",
-      "/vstup",
+      "/login",
     );
   });
 

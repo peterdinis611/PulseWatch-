@@ -16,48 +16,35 @@ export default function OpenGraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "64px 72px",
-          backgroundColor: "#07080c",
-          color: "#f3efe4",
+          backgroundColor: "#0a0d14",
+          color: "#e9edf3",
         }}
       >
         <div
           style={{
             display: "flex",
             fontSize: 18,
-            letterSpacing: 6,
-            textTransform: "uppercase",
-            color: "#e8ff47",
+            color: "#5a9bfc",
           }}
         >
           Uptime · SSL · k6
         </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div
-            style={{
-              fontSize: 88,
-              fontWeight: 800,
-              letterSpacing: -5,
-              lineHeight: 0.9,
-            }}
-          >
-            pulse
-          </div>
-          <div
-            style={{
-              fontSize: 72,
-              fontStyle: "italic",
-              color: "#e8ff47",
-              letterSpacing: -3,
-            }}
-          >
-            watch
-          </div>
+        <div
+          style={{
+            display: "flex",
+            fontSize: 96,
+            fontWeight: 900,
+            letterSpacing: -5,
+            lineHeight: 0.9,
+          }}
+        >
+          PulseWatch
         </div>
         <div
           style={{
             display: "flex",
             fontSize: 28,
-            color: "#9a9588",
+            color: "#8891a1",
             maxWidth: 820,
             lineHeight: 1.35,
           }}

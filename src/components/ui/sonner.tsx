@@ -43,9 +43,9 @@ function Toaster({ ...props }: ToasterProps) {
       toastOptions={{
         classNames: {
           toast:
-            "cn-toast font-sans border bg-popover text-popover-foreground shadow-[0_18px_50px_rgba(0,0,0,0.45)]",
+            "cn-toast font-sans border border-border bg-popover text-popover-foreground shadow-none",
           title: "font-heading tracking-[-0.03em]",
-          description: "font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground",
+          description: "text-[13px] text-muted-foreground",
           closeButton:
             "border-border bg-card text-muted-foreground hover:text-foreground",
         },

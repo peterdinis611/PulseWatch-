@@ -9,7 +9,7 @@ export function SignedInRedirect() {
   const { ready, token } = useSession();
 
   useEffect(() => {
-    if (ready && token) router.replace("/desk");
+    if (ready && token) router.replace("/overview");
   }, [ready, token, router]);
 
   return null;

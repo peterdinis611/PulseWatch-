@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/shared/seo/site";
+import { routes } from "@/shared/lib/routes";
 
 export default function robots(): MetadataRoute.Robots {
   const origin = getSiteUrl();
@@ -7,13 +8,13 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/vstup"],
+        allow: [routes.home, routes.login],
         disallow: [
-          "/desk",
-          "/monitors",
-          "/load",
-          "/alerts",
-          "/settings",
+          routes.overview,
+          routes.monitors,
+          routes.load,
+          routes.alerts,
+          routes.settings,
         ],
       },
     ],
