@@ -106,6 +106,12 @@ export function MonitorList({
   const [mutedFilter, setMutedFilter] = useState<MutedFilter>(() =>
     syncUrl ? parseMuted(searchParams.get("muted")) : "ALL",
   );
+  const [groupFilter, setGroupFilter] = useState(() =>
+    syncUrl ? (searchParams.get("group") ?? "ALL") : "ALL",
+  );
+  const [tagFilter, setTagFilter] = useState(() =>
+    syncUrl ? (searchParams.get("tag") ?? "") : "",
+  );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
 
@@ -118,6 +124,8 @@ export function MonitorList({
     setEnabledFilter(parseEnabled(searchParams.get("enabled")));
     setMutedFilter(parseMuted(searchParams.get("muted")));
     setQuery(searchParams.get("q") ?? "");
+    setGroupFilter(searchParams.get("group") ?? "ALL");
+    setTagFilter(searchParams.get("tag") ?? "");
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sync only when the query string changes
   }, [paramsKey, syncUrl]);
 
@@ -128,6 +136,8 @@ export function MonitorList({
       enabled?: EnabledFilter;
       muted?: MutedFilter;
       q?: string;
+      group?: string;
+      tag?: string;
     }) => {
       if (!syncUrl) return;
       router.replace(
@@ -137,16 +147,51 @@ export function MonitorList({
           enabled: next.enabled ?? enabledFilter,
           muted: next.muted ?? mutedFilter,
           q: next.q ?? query,
+          group: next.group ?? groupFilter,
+          tag: next.tag ?? tagFilter,
         }),
       );
     },
-    [syncUrl, router, status, monitorType, enabledFilter, mutedFilter, query],
+    [
+      syncUrl,
+      router,
+      status,
+      monitorType,
+      enabledFilter,
+      mutedFilter,
+      query,
+      groupFilter,
+      tagFilter,
+    ],
+  );
+
+  const groups = useMemo(
+    () =>
+      [
+        ...new Set(
+          monitors.map((m) => m.groupName).filter((g): g is string => Boolean(g)),
+        ),
+      ].sort((a, b) => a.localeCompare(b)),
+    [monitors],
+  );
+  const tags = useMemo(
+    () =>
+      [...new Set(monitors.flatMap((m) => m.tags ?? []))].sort((a, b) =>
+        a.localeCompare(b),
+      ),
+    [monitors],
   );
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const tagQ = tagFilter.trim().toLowerCase();
     return monitors.filter((monitor) => {
-      const hay = `${monitor.name} ${monitor.type} ${targetOf(monitor)}`.toLowerCase();
+      const hay =
+        `${monitor.name} ${monitor.type} ${targetOf(monitor)} ${monitor.groupName ?? ""} ${(monitor.tags ?? []).join(" ")}`.toLowerCase();
+      const matchGroup =
+        groupFilter === "ALL" || monitor.groupName === groupFilter;
+      const matchTag =
+        !tagQ || (monitor.tags ?? []).some((t) => t.toLowerCase() === tagQ);
       const matchQuery = !q || hay.includes(q);
       const matchStatus =
         status === "ALL" || monitor.lastStatus === (status as MonitorStatus);
@@ -159,10 +204,25 @@ export function MonitorList({
         mutedFilter === "ALL" ||
         (mutedFilter === "MUTED" ? monitor.alertsMuted : !monitor.alertsMuted);
       return (
-        matchQuery && matchStatus && matchType && matchEnabled && matchMuted
+        matchQuery &&
+        matchStatus &&
+        matchType &&
+        matchEnabled &&
+        matchMuted &&
+        matchGroup &&
+        matchTag
       );
     });
-  }, [monitors, query, status, monitorType, enabledFilter, mutedFilter]);
+  }, [
+    monitors,
+    query,
+    status,
+    monitorType,
+    enabledFilter,
+    mutedFilter,
+    groupFilter,
+    tagFilter,
+  ]);
 
   const counts = useMemo(
     () => ({
@@ -226,6 +286,8 @@ export function MonitorList({
     monitorType !== "ALL" ||
     enabledFilter !== "ALL" ||
     mutedFilter !== "ALL" ||
+    groupFilter !== "ALL" ||
+    tagFilter.trim().length > 0 ||
     query.trim().length > 0;
 
   function clearFilters() {
@@ -234,7 +296,11 @@ export function MonitorList({
     setMonitorType("ALL");
     setEnabledFilter("ALL");
     setMutedFilter("ALL");
+    setGroupFilter("ALL");
+    setTagFilter("");
     writeUrl({
+      group: "ALL",
+      tag: "",
       status: "ALL",
       type: "ALL",
       enabled: "ALL",
@@ -370,6 +436,34 @@ export function MonitorList({
                   { value: "MUTED", label: `Muted (${counts.muted})` },
                 ]}
               />
+              {groups.length > 0 ? (
+                <FilterSelect
+                  label="Skupina"
+                  value={groupFilter}
+                  onChange={(value) => {
+                    setGroupFilter(value);
+                    writeUrl({ group: value });
+                  }}
+                  options={[
+                    { value: "ALL", label: "Všetky skupiny" },
+                    ...groups.map((g) => ({ value: g, label: g })),
+                  ]}
+                />
+              ) : null}
+              {tags.length > 0 ? (
+                <FilterSelect
+                  label="Tag"
+                  value={tagFilter}
+                  onChange={(value) => {
+                    setTagFilter(value);
+                    writeUrl({ tag: value });
+                  }}
+                  options={[
+                    { value: "", label: "Všetky tagy" },
+                    ...tags.map((t) => ({ value: t, label: `#${t}` })),
+                  ]}
+                />
+              ) : null}
             </div>
           </div>
         </div>

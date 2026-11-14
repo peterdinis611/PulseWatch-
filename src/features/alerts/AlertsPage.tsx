@@ -15,6 +15,7 @@ import {
 import { formatAgo } from "@/shared/lib/format";
 import type { Notification } from "@/shared/lib/types";
 import { useSession } from "@/shared/session";
+import { IncidentsPanel } from "@/features/alerts/IncidentsPanel";
 import { PageHeader } from "@/shared/ui/page-header";
 import { StatusBadge } from "@/shared/ui/status-badge";
 import { listPanelClass, monoClass } from "@/shared/ui/list";
@@ -28,8 +29,61 @@ function notificationHref(item: Notification): string | null {
   return null;
 }
 
+type Tab = "incidents" | "notifications";
+
 export default function AlertsPage() {
   const router = useRouter();
+  const [tab, setTab] = useState<Tab>("incidents");
+
+  return (
+    <>
+      <PageHeader
+        kicker="Incidenty"
+        title="Čo práve horí."
+        lede="Incidenty sa otvoria pri páde monitora a zatvoria pri recovery. Notifikácie ostávajú v druhej záložke."
+      />
+
+      <div role="tablist" className="mb-4 flex gap-5 border-b border-border">
+        {(
+          [
+            ["incidents", "Incidenty"],
+            ["notifications", "Notifikácie"],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            role="tab"
+            aria-selected={tab === value}
+            onClick={() => setTab(value)}
+            className={cn(
+              "-mb-px border-b-2 px-1 pb-2.5 text-[15px] transition-colors",
+              tab === value
+                ? "border-primary font-medium text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "incidents" ? <IncidentsPanel /> : <NotificationsPanel />}
+
+      <p className="mt-6 text-center">
+        <button
+          type="button"
+          className={`${monoClass} text-muted-foreground underline-offset-4 hover:text-foreground hover:underline`}
+          onClick={() => router.push("/overview")}
+        >
+          ← Späť na prehľad
+        </button>
+      </p>
+    </>
+  );
+}
+
+function NotificationsPanel() {
   const { unread, refresh } = useSession();
   const [items, setItems] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
@@ -105,23 +159,6 @@ export default function AlertsPage() {
 
   return (
     <>
-      <PageHeader
-        kicker="Upozornenia"
-        title="Celá história."
-        lede="Monitor DOWN, recovery, k6 výsledky — všetko na jednom mieste. Live cez WebSocket."
-        actions={
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            disabled={unread === 0}
-            onClick={markAll}
-          >
-            Označiť prečítané
-          </Button>
-        }
-      />
-
       <section className={listPanelClass("animate-rise")}>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-4">
           <div className="flex gap-2">
@@ -141,9 +178,20 @@ export default function AlertsPage() {
               </button>
             ))}
           </div>
-          <p className={monoClass}>
-            {visible.length} záznamov · {unread} neprečítaných
-          </p>
+          <div className="flex items-center gap-3">
+            <p className={monoClass}>
+              {visible.length} záznamov · {unread} neprečítaných
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={unread === 0}
+              onClick={markAll}
+            >
+              Označiť prečítané
+            </Button>
+          </div>
         </div>
 
         {error ? (
@@ -186,6 +234,7 @@ export default function AlertsPage() {
                   <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
                   <p className="mt-2 font-mono text-[10px] text-muted-foreground">
                     {formatAgo(item.createdAt)}
+                    {item.incidentId ? " · incident" : ""}
                     {href ? " · detail →" : ""}
                   </p>
                 </div>
@@ -223,15 +272,6 @@ export default function AlertsPage() {
         )}
       </section>
 
-      <p className="mt-6 text-center">
-        <button
-          type="button"
-          className={`${monoClass} text-muted-foreground underline-offset-4 hover:text-foreground hover:underline`}
-          onClick={() => router.push("/overview")}
-        >
-          ← Späť na prehľad
-        </button>
-      </p>
     </>
   );
 }

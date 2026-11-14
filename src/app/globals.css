@@ -168,6 +168,144 @@
   animation-delay: 110ms;
 }
 
+.mask-line:nth-of-type(3) > span {
+  animation-delay: 220ms;
+}
+
+/* Landing hero desk PC */
+[data-hero-desk] {
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero-desk-scene {
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, #000 14%, #000 82%, transparent 100%),
+    linear-gradient(180deg, #000 0%, #000 70%, transparent 100%);
+  mask-image:
+    linear-gradient(90deg, transparent 0%, #000 14%, #000 82%, transparent 100%),
+    linear-gradient(180deg, #000 0%, #000 70%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  animation: rise 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+.hd-bloom {
+  transform-origin: 320px 200px;
+  animation: hd-breathe 5.5s ease-in-out infinite;
+}
+
+.hd-led,
+.hd-pulse,
+.hd-dot {
+  animation: hd-blink 2.2s ease-in-out infinite;
+}
+
+.hd-dot-1 {
+  animation-delay: 0.4s;
+}
+.hd-dot-2 {
+  animation-delay: 0.8s;
+}
+.hd-dot-3 {
+  animation-delay: 1.2s;
+}
+
+.hd-scan {
+  animation: hd-scan 3.8s linear infinite;
+}
+
+.hd-wave {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation:
+    hd-draw 2.8s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both,
+    hd-shimmer 4.5s ease-in-out 3.2s infinite;
+}
+
+.hd-wave-fill {
+  animation: hd-fade-in 1.2s ease 1s both;
+}
+
+.hd-keys {
+  transform-origin: 320px 426px;
+  animation: hd-float 6s ease-in-out infinite;
+}
+
+@keyframes hd-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes hd-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes hd-scan {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.65;
+  }
+  88% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateY(220px);
+    opacity: 0;
+  }
+}
+
+@keyframes hd-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hd-shimmer {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes hd-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.12;
+  }
+}
+
+@keyframes hd-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
 [data-sonner-toaster] {
   z-index: 80;
 }
@@ -178,7 +316,19 @@
   }
 
   .animate-rise,
-  .mask-line > span {
-    animation: none;
+  .mask-line > span,
+  .hd-bloom,
+  .hd-led,
+  .hd-pulse,
+  .hd-dot,
+  .hd-scan,
+  .hd-wave,
+  .hd-wave-fill,
+  .hd-keys {
+    animation: none !important;
+  }
+
+  .hd-wave {
+    stroke-dashoffset: 0;
   }
 }

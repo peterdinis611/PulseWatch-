@@ -195,11 +195,41 @@ export default function MonitorDetailPage() {
           <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
             {!monitor.enabled ? <span>paused</span> : null}
             {monitor.alertsMuted ? <span>muted</span> : null}
+            {monitor.groupName ? <span>skupina {monitor.groupName}</span> : null}
+            {monitor.tags?.length
+              ? monitor.tags.map((tag) => (
+                  <span key={tag} className="text-primary">
+                    #{tag}
+                  </span>
+                ))
+              : null}
+            {monitor.showOnStatusPage ? <span>na status page</span> : null}
             <span>
               {formatMs(monitor.lastLatencyMs)} ·{" "}
               {formatAgo(monitor.lastCheckedAt)}
             </span>
           </div>
+          {(monitor.failureThreshold > 1 ||
+            monitor.uptimeSloPercent != null ||
+            monitor.latencyP95ThresholdMs != null) && (
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
+              {monitor.failureThreshold > 1 ? (
+                <span>
+                  Soft DOWN {monitor.consecutiveFailures}/
+                  {monitor.failureThreshold}
+                </span>
+              ) : null}
+              {monitor.uptimeSloPercent != null ? (
+                <span>
+                  Uptime SLO {monitor.uptimeSloPercent}% /{" "}
+                  {monitor.sloWindowHours}h
+                </span>
+              ) : null}
+              {monitor.latencyP95ThresholdMs != null ? (
+                <span>p95 SLO {formatMs(monitor.latencyP95ThresholdMs)}</span>
+              ) : null}
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <StatusBadge value={monitor.lastStatus} />
@@ -288,11 +318,28 @@ export default function MonitorDetailPage() {
         </div>
       ) : null}
 
+      {monitor.lastStatus !== "DOWN" &&
+      monitor.consecutiveFailures > 0 &&
+      monitor.failureThreshold > 1 ? (
+        <div className="mb-6 border border-warn/40 bg-card px-4 py-3 text-[15px]">
+          <p className="text-[13px] font-medium text-warn">Soft DOWN</p>
+          <p className="mt-1 text-muted-foreground">
+            {monitor.consecutiveFailures} z {monitor.failureThreshold} zlyhaní
+            po sebe
+            {monitor.lastError ? ` · ${monitor.lastError}` : ""}. Alert až po
+            prahu.
+          </p>
+        </div>
+      ) : null}
+
       {quickResult ? <QuickCheckPanel result={quickResult} draft /> : null}
       <MonitorHistoryPanel
         checks={history}
         uptime={uptime}
         hours={hours}
+        thresholdMs={monitor.latencyP95ThresholdMs}
+        uptimeSloPercent={monitor.uptimeSloPercent}
+        sloWindowHours={monitor.sloWindowHours}
         onHoursChange={(next) => {
           const window = HISTORY_WINDOWS.find((item) => item.hours === next);
           if (window) setHours(window.hours);
@@ -344,6 +391,7 @@ export default function MonitorDetailPage() {
           busy={busy}
           checking={checking}
           error={null}
+          consecutiveFailures={monitor.consecutiveFailures}
           onQuickCheck={runQuickCheck}
           onSubmit={async (input) => {
             setBusy(true);

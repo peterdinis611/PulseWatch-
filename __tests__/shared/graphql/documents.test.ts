@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   CREATE_MONITOR,
   CREATE_STRESS,
+  INCIDENTS_QUERY,
+  MY_STATUS_PAGE,
+  PUBLIC_STATUS_PAGE,
+  UPDATE_STATUS_PAGE,
   DELETE_MONITOR,
   LOGIN_MUTATION,
   MARK_ALL_READ,
@@ -47,5 +51,13 @@ describe("graphql documents", () => {
   it("exports settings query", () => {
     expect(SETTINGS_QUERY).toMatch(/query MonitorSettings/);
     expect(UPDATE_SETTINGS).toMatch(/mutation UpdateMonitorSettings/);
+  });
+
+  it("exports incidents and status page operations", () => {
+    expect(INCIDENTS_QUERY).toMatch(/query Incidents/);
+    expect(MY_STATUS_PAGE).toMatch(/myStatusPage/);
+    expect(UPDATE_STATUS_PAGE).toMatch(/mutation UpdateStatusPage/);
+    expect(PUBLIC_STATUS_PAGE).toMatch(/publicStatusPage\(slug: \$slug\)/);
+    expect(CREATE_MONITOR).toMatch(/failureThreshold/);
   });
 });

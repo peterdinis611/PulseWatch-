@@ -1,7 +1,8 @@
 "use client";
 
+import { useId, useMemo, useState } from "react";
 import type { MonitorCheck, MonitorUptime } from "@/shared/lib/types";
-import { formatMs } from "@/shared/lib/format";
+import { formatAgo, formatMs, formatWhen } from "@/shared/lib/format";
 import { cn } from "@/lib/utils";
 
 export const HISTORY_WINDOWS = [
@@ -15,19 +16,29 @@ export function MonitorHistoryPanel({
   uptime,
   hours = 24,
   onHoursChange,
+  thresholdMs,
+  uptimeSloPercent,
+  sloWindowHours,
   className,
 }: {
   checks: MonitorCheck[];
   uptime: MonitorUptime | null;
   hours?: number;
   onHoursChange?: (hours: number) => void;
+  thresholdMs?: number | null;
+  uptimeSloPercent?: number | null;
+  sloWindowHours?: number | null;
   className?: string;
 }) {
   const points = checks.filter((c) => c.status === "UP" || c.status === "DOWN");
-  const maxLatency = Math.max(...points.map((c) => c.latencyMs), 1);
   const periodLabel =
     HISTORY_WINDOWS.find((window) => window.hours === hours)?.label ??
     `${uptime?.periodHours ?? hours}h`;
+  const uptimeBreached =
+    uptime != null &&
+    uptimeSloPercent != null &&
+    uptime.totalChecks > 0 &&
+    uptime.uptimePercent < uptimeSloPercent;
 
   return (
     <section
@@ -79,9 +90,26 @@ export function MonitorHistoryPanel({
             <dl className="flex flex-wrap gap-5 text-[13px]">
               <div>
                 <dt className="text-muted-foreground">Uptime</dt>
-                <dd className="mt-1 font-heading text-lg font-black tabular-nums text-up">
+                <dd
+                  className={cn(
+                    "mt-1 font-heading text-lg font-black tabular-nums",
+                    uptimeBreached ? "text-warn" : "text-up",
+                  )}
+                >
                   {uptime.uptimePercent}%
                 </dd>
+                {uptimeSloPercent != null ? (
+                  <p
+                    className={cn(
+                      "mt-0.5 text-[12px]",
+                      uptimeBreached ? "text-warn" : "text-muted-foreground",
+                    )}
+                  >
+                    SLO {uptimeSloPercent}%
+                    {sloWindowHours ? ` / ${sloWindowHours}h` : ""}
+                    {uptimeBreached ? " · breach" : ""}
+                  </p>
+                ) : null}
               </div>
               <div>
                 <dt className="text-muted-foreground">Kontroly</dt>
@@ -97,6 +125,14 @@ export function MonitorHistoryPanel({
                     : "—"}
                 </dd>
               </div>
+              {uptime.p95LatencyMs != null ? (
+                <div>
+                  <dt className="text-muted-foreground">p95 latencia</dt>
+                  <dd className="mt-1 font-heading text-lg font-black tabular-nums text-foreground">
+                    {formatMs(uptime.p95LatencyMs)}
+                  </dd>
+                </div>
+              ) : null}
             </dl>
           ) : null}
         </div>
@@ -111,8 +147,8 @@ export function MonitorHistoryPanel({
         <div className="px-5 py-5">
           <LatencyChart
             checks={points}
-            maxLatency={maxLatency}
             periodLabel={periodLabel}
+            thresholdMs={thresholdMs}
           />
           <StatusTimeline checks={points} />
         </div>
@@ -123,78 +159,346 @@ export function MonitorHistoryPanel({
 
 function LatencyChart({
   checks,
-  maxLatency,
   periodLabel,
+  thresholdMs,
 }: {
   checks: MonitorCheck[];
-  maxLatency: number;
   periodLabel: string;
+  thresholdMs?: number | null;
 }) {
-  const width = 640;
-  const height = 120;
-  const pad = 8;
-  const coords = checks.map((check, index) => {
-    const x =
-      checks.length === 1
-        ? width / 2
-        : pad + (index / (checks.length - 1)) * (width - pad * 2);
-    const y =
-      height - pad - (check.latencyMs / maxLatency) * (height - pad * 2);
-    return { x, y, check };
-  });
+  const gradientId = useId().replace(/:/g, "");
+  const [active, setActive] = useState<number | null>(null);
+
+  const width = 720;
+  const height = 220;
+  const pad = { top: 16, right: 16, bottom: 36, left: 52 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+
+  const maxLatency = useMemo(() => {
+    const peak = Math.max(
+      ...checks.map((c) => c.latencyMs),
+      thresholdMs && thresholdMs > 0 ? thresholdMs : 0,
+      1,
+    );
+    return niceCeil(peak);
+  }, [checks, thresholdMs]);
+
+  const yTicks = useMemo(
+    () => [0, 0.25, 0.5, 0.75, 1].map((t) => Math.round(maxLatency * t)),
+    [maxLatency],
+  );
+
+  const coords = useMemo(
+    () =>
+      checks.map((check, index) => {
+        const x =
+          checks.length === 1
+            ? pad.left + plotW / 2
+            : pad.left + (index / (checks.length - 1)) * plotW;
+        const y =
+          pad.top + plotH - (check.latencyMs / maxLatency) * plotH;
+        return { x, y, check, index };
+      }),
+    [checks, maxLatency, pad.left, pad.top, plotH, plotW],
+  );
+
   const line = coords.map((p) => `${p.x},${p.y}`).join(" ");
+  const area = `${pad.left},${pad.top + plotH} ${line} ${pad.left + plotW},${pad.top + plotH}`;
+
+  const xLabels = useMemo(() => {
+    if (checks.length === 0) return [];
+    const picks =
+      checks.length === 1
+        ? [0]
+        : checks.length === 2
+          ? [0, checks.length - 1]
+          : [0, Math.floor((checks.length - 1) / 2), checks.length - 1];
+    return [...new Set(picks)].map((index) => ({
+      index,
+      x: coords[index]?.x ?? pad.left,
+      label: shortTime(checks[index]?.checkedAt),
+    }));
+  }, [checks, coords, pad.left]);
+
+  const thresholdY =
+    thresholdMs && thresholdMs > 0 && thresholdMs <= maxLatency
+      ? pad.top + plotH - (thresholdMs / maxLatency) * plotH
+      : null;
+
+  const activePoint = active != null ? coords[active] : null;
+
+  function nearestIndex(clientX: number, rect: DOMRect) {
+    const svgX = ((clientX - rect.left) / rect.width) * width;
+    let best = 0;
+    let bestDist = Number.POSITIVE_INFINITY;
+    for (const point of coords) {
+      const dist = Math.abs(point.x - svgX);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = point.index;
+      }
+    }
+    return best;
+  }
 
   return (
-    <div className="overflow-x-auto">
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        className="h-[120px] w-full min-w-[320px]"
-        role="img"
-        aria-label={`Graf latencie za posledných ${periodLabel}`}
-      >
-        <defs>
-          <linearGradient id="latencyFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <polyline
-          fill="none"
-          stroke="var(--primary)"
-          strokeWidth="2"
-          points={line}
-        />
-        <polygon
-          fill="url(#latencyFill)"
-          points={`${pad},${height - pad} ${line} ${width - pad},${height - pad}`}
-        />
-        {coords.map(({ x, y, check }) => (
-          <circle
-            key={check.id}
-            cx={x}
-            cy={y}
-            r={3}
-            fill={check.status === "UP" ? "var(--primary)" : "var(--down)"}
+    <div className="relative">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[13px] font-medium text-muted-foreground">
+          Latencia
+        </p>
+        <div className="flex flex-wrap items-center gap-3 text-[12px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-primary" />
+            UP
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-down" />
+            DOWN
+          </span>
+          {thresholdY != null ? (
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-px w-3 border-t border-dashed border-warn" />
+              SLO {formatMs(thresholdMs)}
+            </span>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="h-[220px] w-full min-w-[360px] touch-pan-y"
+          role="img"
+          aria-label={`Graf latencie za posledných ${periodLabel}`}
+          onMouseLeave={() => setActive(null)}
+          onMouseMove={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            setActive(nearestIndex(event.clientX, rect));
+          }}
+          onTouchStart={(event) => {
+            const touch = event.touches[0];
+            if (!touch) return;
+            const rect = event.currentTarget.getBoundingClientRect();
+            setActive(nearestIndex(touch.clientX, rect));
+          }}
+        >
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
+          {yTicks.map((tick) => {
+            const y = pad.top + plotH - (tick / maxLatency) * plotH;
+            return (
+              <g key={tick}>
+                <line
+                  x1={pad.left}
+                  x2={pad.left + plotW}
+                  y1={y}
+                  y2={y}
+                  stroke="var(--border)"
+                  strokeDasharray={tick === 0 ? undefined : "3 5"}
+                  strokeOpacity={tick === 0 ? 1 : 0.7}
+                />
+                <text
+                  x={pad.left - 10}
+                  y={y + 4}
+                  textAnchor="end"
+                  className="fill-muted-foreground font-mono text-[11px]"
+                >
+                  {tick === 0 ? "0" : formatAxisMs(tick)}
+                </text>
+              </g>
+            );
+          })}
+
+          {thresholdY != null ? (
+            <g>
+              <line
+                x1={pad.left}
+                x2={pad.left + plotW}
+                y1={thresholdY}
+                y2={thresholdY}
+                stroke="var(--warn)"
+                strokeWidth="1.5"
+                strokeDasharray="5 4"
+                strokeOpacity="0.9"
+              />
+              <text
+                x={pad.left + plotW}
+                y={thresholdY - 6}
+                textAnchor="end"
+                className="fill-warn font-mono text-[10px]"
+              >
+                SLO {formatAxisMs(thresholdMs!)}
+              </text>
+            </g>
+          ) : null}
+
+          <polygon fill={`url(#${gradientId})`} points={area} />
+          <polyline
+            fill="none"
+            stroke="var(--primary)"
+            strokeWidth="2.25"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            points={line}
           />
-        ))}
-      </svg>
+
+          {activePoint ? (
+            <line
+              x1={activePoint.x}
+              x2={activePoint.x}
+              y1={pad.top}
+              y2={pad.top + plotH}
+              stroke="var(--foreground)"
+              strokeOpacity="0.2"
+              strokeDasharray="3 4"
+            />
+          ) : null}
+
+          {coords.map(({ x, y, check, index }) => {
+            const isActive = active === index;
+            const down = check.status === "DOWN";
+            return (
+              <circle
+                key={check.id}
+                cx={x}
+                cy={y}
+                r={isActive ? 5 : 3}
+                fill={down ? "var(--down)" : "var(--primary)"}
+                stroke={isActive ? "var(--background)" : "none"}
+                strokeWidth={isActive ? 2 : 0}
+                className="transition-[r] duration-150"
+              />
+            );
+          })}
+
+          {xLabels.map((label) => (
+            <text
+              key={label.index}
+              x={label.x}
+              y={height - 12}
+              textAnchor={
+                label.index === 0
+                  ? "start"
+                  : label.index === checks.length - 1
+                    ? "end"
+                    : "middle"
+              }
+              className="fill-muted-foreground font-mono text-[11px]"
+            >
+              {label.label}
+            </text>
+          ))}
+        </svg>
+      </div>
+
+      {activePoint ? (
+        <div
+          className="pointer-events-none absolute top-10 z-10 min-w-[148px] border border-border bg-background px-3 py-2 shadow-lg"
+          style={{
+            left: `clamp(0px, calc(${(activePoint.x / width) * 100}% - 74px), calc(100% - 160px))`,
+          }}
+        >
+          <p className="font-mono text-[12px] text-muted-foreground">
+            {formatWhen(activePoint.check.checkedAt)}
+          </p>
+          <p className="mt-1 font-heading text-[18px] font-black tabular-nums tracking-[-0.03em]">
+            {formatMs(activePoint.check.latencyMs)}
+          </p>
+          <p
+            className={cn(
+              "mt-0.5 text-[12px] font-medium",
+              activePoint.check.status === "UP" ? "text-up" : "text-down",
+            )}
+          >
+            {activePoint.check.status}
+            {activePoint.check.error
+              ? ` · ${activePoint.check.error.slice(0, 48)}`
+              : ""}
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }
 
 function StatusTimeline({ checks }: { checks: MonitorCheck[] }) {
+  const [hover, setHover] = useState<number | null>(null);
+  const downCount = checks.filter((c) => c.status === "DOWN").length;
+  const active = hover != null ? checks[hover] : null;
+
   return (
-    <div className="mt-4 flex h-2 overflow-hidden rounded-sm border border-border">
-      {checks.map((check) => (
-        <div
-          key={check.id}
-          title={`${check.status} · ${formatMs(check.latencyMs)}`}
-          className={cn(
-            "min-w-[2px] flex-1",
-            check.status === "UP" ? "bg-up/80" : "bg-down/90",
-          )}
-        />
-      ))}
+    <div className="mt-5">
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2 text-[12px] text-muted-foreground">
+        <p>
+          Stavový pás · {checks.length} kontrol
+          {downCount > 0 ? (
+            <>
+              {" "}
+              · <span className="text-down">{downCount} DOWN</span>
+            </>
+          ) : null}
+        </p>
+        {active ? (
+          <p className="font-mono text-foreground">
+            {formatAgo(active.checkedAt)} · {active.status} ·{" "}
+            {formatMs(active.latencyMs)}
+          </p>
+        ) : (
+          <p>Najstaršia ← → najnovšia</p>
+        )}
+      </div>
+      <div
+        className="flex h-3 overflow-hidden border border-border"
+        onMouseLeave={() => setHover(null)}
+      >
+        {checks.map((check, index) => (
+          <button
+            key={check.id}
+            type="button"
+            aria-label={`${check.status} ${formatMs(check.latencyMs)} ${formatWhen(check.checkedAt)}`}
+            className={cn(
+              "min-w-[2px] flex-1 transition-opacity",
+              check.status === "UP" ? "bg-up/85" : "bg-down",
+              hover != null && hover !== index && "opacity-35",
+            )}
+            onMouseEnter={() => setHover(index)}
+            onFocus={() => setHover(index)}
+          />
+        ))}
+      </div>
     </div>
   );
+}
+
+function niceCeil(value: number): number {
+  if (value <= 50) return Math.ceil(value / 10) * 10 || 10;
+  if (value <= 200) return Math.ceil(value / 25) * 25;
+  if (value <= 1000) return Math.ceil(value / 50) * 50;
+  if (value <= 5000) return Math.ceil(value / 250) * 250;
+  return Math.ceil(value / 500) * 500;
+}
+
+function formatAxisMs(value: number): string {
+  if (value >= 1000) {
+    const sec = value / 1000;
+    return Number.isInteger(sec) ? `${sec}s` : `${sec.toFixed(1)}s`;
+  }
+  return `${value}`;
+}
+
+function shortTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("sk-SK", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }

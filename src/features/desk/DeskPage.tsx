@@ -10,7 +10,12 @@ import { EmptyState, PageHeader } from "@/shared/ui/page-header";
 import { usePoll } from "@/shared/hooks/usePoll";
 import { gql } from "@/shared/graphql/client";
 import { DESK_QUERY } from "@/shared/graphql/documents";
-import type { FleetUptime, StressTest } from "@/shared/lib/types";
+import type {
+  FleetUptime,
+  Incident,
+  StatusPageSettings,
+  StressTest,
+} from "@/shared/lib/types";
 import { useSession } from "@/shared/session";
 import { monitorsWith, routes } from "@/shared/lib/routes";
 import { listPanelClass } from "@/shared/ui/list";
@@ -21,13 +26,26 @@ export default function DeskPage() {
   const { monitors } = useSession();
   const { data } = usePoll(
     () =>
-      gql<{ fleetUptime: FleetUptime; stressTests: StressTest[] }>(DESK_QUERY),
+      gql<{
+        fleetUptime: FleetUptime;
+        stressTests: StressTest[];
+        incidents: Incident[];
+        myStatusPage: StatusPageSettings;
+      }>(DESK_QUERY),
     8000,
   );
   const loads = data?.stressTests ?? [];
   const uptime = data?.fleetUptime;
+  const openIncidents = data?.incidents ?? [];
+  const statusPage = data?.myStatusPage;
   const up = monitors.filter((m) => m.lastStatus === "UP").length;
   const down = monitors.filter((m) => m.lastStatus === "DOWN").length;
+  const softFailing = monitors.filter(
+    (m) =>
+      m.lastStatus !== "DOWN" &&
+      m.consecutiveFailures > 0 &&
+      m.failureThreshold > 1,
+  ).length;
   const running = loads.filter((t) => t.lastStatus === "RUNNING").length;
   const downMonitors = monitors.filter((m) => m.lastStatus === "DOWN");
   const previewMonitors =
@@ -53,6 +71,33 @@ export default function DeskPage() {
           </>
         }
       />
+
+      {(openIncidents.length > 0 || softFailing > 0 || statusPage?.isPublic) && (
+        <div className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-2 border border-border bg-card px-4 py-3 text-[14px]">
+          {openIncidents.length > 0 ? (
+            <Link
+              href={routes.alerts}
+              className="text-down underline-offset-4 hover:underline"
+            >
+              {openIncidents.length} otvorených incidentov →
+            </Link>
+          ) : null}
+          {softFailing > 0 ? (
+            <span className="text-warn">
+              Soft DOWN: {softFailing} monitorov pod prahom
+            </span>
+          ) : null}
+          {statusPage?.isPublic ? (
+            <Link
+              href={routes.status(statusPage.slug)}
+              target="_blank"
+              className="ml-auto text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Status stránka →
+            </Link>
+          ) : null}
+        </div>
+      )}
 
       <section className={cn(listPanelClass("animate-rise mb-8"))}>
         <div className="relative overflow-hidden px-1 pt-1 pb-0 md:px-3">

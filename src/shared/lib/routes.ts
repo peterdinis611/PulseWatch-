@@ -10,6 +10,7 @@ export const routes = {
   loadDetail: (id: string) => `/load/${id}` as const,
   alerts: "/alerts",
   settings: "/settings",
+  status: (slug: string) => `/status/${slug}` as const,
 } as const;
 
 export type MonitorsQuery = {
@@ -18,6 +19,8 @@ export type MonitorsQuery = {
   enabled?: string;
   muted?: string;
   q?: string;
+  group?: string;
+  tag?: string;
 };
 
 export function monitorsWith(query: MonitorsQuery = {}): string {
@@ -28,6 +31,8 @@ export function monitorsWith(query: MonitorsQuery = {}): string {
     params.set("enabled", query.enabled);
   }
   if (query.muted && query.muted !== "ALL") params.set("muted", query.muted);
+  if (query.group && query.group !== "ALL") params.set("group", query.group);
+  if (query.tag?.trim()) params.set("tag", query.tag.trim());
   if (query.q?.trim()) params.set("q", query.q.trim());
   const qs = params.toString();
   return qs ? `${routes.monitors}?${qs}` : routes.monitors;

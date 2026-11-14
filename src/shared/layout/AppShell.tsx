@@ -13,6 +13,7 @@ import { useSession } from "@/shared/session";
 const NAV = [
   { href: routes.overview, label: "Prehľad" },
   { href: routes.monitors, label: "Monitory" },
+  { href: routes.alerts, label: "Alerty" },
   { href: routes.load, label: "Záťaž" },
   { href: routes.settings, label: "Nastavenia" },
 ];

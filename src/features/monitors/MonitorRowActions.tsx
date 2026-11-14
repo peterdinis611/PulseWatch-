@@ -153,11 +153,20 @@ export function MonitorRowActions({
 }
 
 export function MonitorFlags({ monitor }: { monitor: Monitor }) {
-  if (monitor.enabled && !monitor.alertsMuted) return null;
+  const softFail =
+    monitor.lastStatus !== "DOWN" &&
+    monitor.consecutiveFailures > 0 &&
+    monitor.failureThreshold > 1;
+  if (monitor.enabled && !monitor.alertsMuted && !softFail) return null;
   return (
     <span className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[12px] text-muted-foreground">
       {!monitor.enabled ? <span>paused</span> : null}
       {monitor.alertsMuted ? <span>muted</span> : null}
+      {softFail ? (
+        <span className="text-warn">
+          soft {monitor.consecutiveFailures}/{monitor.failureThreshold}
+        </span>
+      ) : null}
     </span>
   );
 }

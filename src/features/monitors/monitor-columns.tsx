@@ -82,6 +82,16 @@ export function buildMonitorColumns({
           <div className={nameClass}>{row.original.name}</div>
           <span className={typeBadgeClass}>{row.original.type}</span>
           <MonitorFlags monitor={row.original} />
+          {row.original.groupName || row.original.tags?.length ? (
+            <div className="mt-1 flex flex-wrap gap-x-2 text-[12px] text-muted-foreground">
+              {row.original.groupName ? (
+                <span className="text-foreground/70">{row.original.groupName}</span>
+              ) : null}
+              {(row.original.tags ?? []).map((tag) => (
+                <span key={tag}>#{tag}</span>
+              ))}
+            </div>
+          ) : null}
         </div>
       ),
       enableSorting: true,

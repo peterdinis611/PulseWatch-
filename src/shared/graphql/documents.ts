@@ -12,6 +12,14 @@ const MONITOR_FIELDS = `
   lastCheckedAt
   createdAt
   updatedAt
+  failureThreshold
+  consecutiveFailures
+  latencyP95ThresholdMs
+  uptimeSloPercent
+  sloWindowHours
+  tags
+  groupName
+  showOnStatusPage
   config {
     url
     method
@@ -29,6 +37,11 @@ const MONITOR_FIELDS = `
     expectedValue
     service
     topic
+    bodyContains
+    jsonPath
+    jsonExpected
+    headerName
+    headerExpected
   }
 `;
 
@@ -147,7 +160,7 @@ export const MONITOR_HISTORY_QUERY = `
       id monitorId status error latencyMs checkedAt
     }
     monitorUptime(id: $id, hours: $hours) {
-      periodHours totalChecks upChecks uptimePercent avgLatencyMs
+      periodHours totalChecks upChecks uptimePercent avgLatencyMs p95LatencyMs
     }
   }
 `;
@@ -206,6 +219,18 @@ export const DESK_QUERY = `
       avgUptimePercent
     }
     stressTests { ${STRESS_FIELDS} }
+    incidents(status: OPEN) {
+      id
+      monitorId
+      title
+      status
+      openedAt
+    }
+    myStatusPage {
+      slug
+      title
+      isPublic
+    }
   }
 `;
 
@@ -289,7 +314,7 @@ export const RUN_STRESS = `
 export const NOTIFICATIONS_QUERY = `
   query Notifications {
     notifications {
-      id type title body monitorId stressTestId readAt createdAt
+      id type title body monitorId stressTestId incidentId readAt createdAt
     }
     unreadNotificationCount
   }
@@ -312,7 +337,66 @@ export const MARK_ALL_READ = `
 export const NOTIFICATION_SUB = `
   subscription NotificationReceived {
     notificationReceived {
-      id type title body monitorId stressTestId readAt createdAt
+      id type title body monitorId stressTestId incidentId readAt createdAt
+    }
+  }
+`;
+
+const INCIDENT_FIELDS = `
+  id
+  monitorId
+  monitorName
+  title
+  status
+  lastError
+  openedAt
+  resolvedAt
+  createdAt
+  updatedAt
+`;
+
+export const INCIDENTS_QUERY = `
+  query Incidents($status: IncidentStatus) {
+    incidents(status: $status) { ${INCIDENT_FIELDS} }
+  }
+`;
+
+const STATUS_PAGE_FIELDS = `
+  id
+  slug
+  title
+  isPublic
+  updatedAt
+`;
+
+export const MY_STATUS_PAGE = `
+  query MyStatusPage {
+    myStatusPage { ${STATUS_PAGE_FIELDS} }
+  }
+`;
+
+export const UPDATE_STATUS_PAGE = `
+  mutation UpdateStatusPage($input: UpdateStatusPageInput!) {
+    updateStatusPage(input: $input) { ${STATUS_PAGE_FIELDS} }
+  }
+`;
+
+export const PUBLIC_STATUS_PAGE = `
+  query PublicStatusPage($slug: String!) {
+    publicStatusPage(slug: $slug) {
+      slug
+      title
+      overallStatus
+      updatedAt
+      monitors {
+        id
+        name
+        groupName
+        tags
+        lastStatus
+        lastCheckedAt
+        uptimePercent24h
+      }
     }
   }
 `;

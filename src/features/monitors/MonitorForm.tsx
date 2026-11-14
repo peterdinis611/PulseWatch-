@@ -26,6 +26,7 @@ export function MonitorForm({
   busy,
   checking = false,
   error,
+  consecutiveFailures,
 }: {
   initial?: MonitorFormState;
   submitLabel: string;
@@ -34,6 +35,7 @@ export function MonitorForm({
   busy: boolean;
   checking?: boolean;
   error: string | null;
+  consecutiveFailures?: number;
 }) {
   const [form, setForm] = useState<MonitorFormState>(
     initial ?? blankMonitorForm(),
@@ -130,6 +132,52 @@ export function MonitorForm({
               />
             </FormField>
           </FormRow>
+          <FormSection title="Asercie odpovede" hint="Voliteľné. Prázdne polia sa nekontrolujú.">
+            <FormField label="Telo obsahuje">
+              <Input
+                value={form.bodyContains}
+                onChange={(e) => set("bodyContains", e.target.value)}
+                placeholder="ok"
+                className="h-9"
+              />
+            </FormField>
+            <FormRow>
+              <FormField label="JSON path">
+                <Input
+                  value={form.jsonPath}
+                  onChange={(e) => set("jsonPath", e.target.value)}
+                  placeholder="data.status"
+                  className="h-9"
+                />
+              </FormField>
+              <FormField label="JSON očakávané">
+                <Input
+                  value={form.jsonExpected}
+                  onChange={(e) => set("jsonExpected", e.target.value)}
+                  placeholder="healthy"
+                  className="h-9"
+                />
+              </FormField>
+            </FormRow>
+            <FormRow>
+              <FormField label="Hlavička">
+                <Input
+                  value={form.headerName}
+                  onChange={(e) => set("headerName", e.target.value)}
+                  placeholder="content-type"
+                  className="h-9"
+                />
+              </FormField>
+              <FormField label="Hlavička očakávaná">
+                <Input
+                  value={form.headerExpected}
+                  onChange={(e) => set("headerExpected", e.target.value)}
+                  placeholder="application/json"
+                  className="h-9"
+                />
+              </FormField>
+            </FormRow>
+          </FormSection>
         </>
       ) : null}
 
@@ -289,6 +337,87 @@ export function MonitorForm({
         </CheckRow>
       )}
 
+      <FormSection
+        title="Soft DOWN"
+        hint="Monitor prejde na DOWN až po N po sebe idúcich zlyhaniach."
+      >
+        <FormField
+          label="Prah zlyhaní"
+          hint={
+            consecutiveFailures != null
+              ? `Aktuálne po sebe idúcich zlyhaní: ${consecutiveFailures}`
+              : undefined
+          }
+        >
+          <Input
+            inputMode="numeric"
+            value={form.failureThreshold}
+            onChange={(e) => set("failureThreshold", e.target.value)}
+            placeholder="1"
+            className="h-9 max-w-40"
+          />
+        </FormField>
+      </FormSection>
+
+      <FormSection title="SLO" hint="Cieľ latencie a dostupnosti v okne.">
+        <FormRow>
+          <FormField label="p95 latencia max (ms)">
+            <Input
+              inputMode="numeric"
+              value={form.latencyP95ThresholdMs}
+              onChange={(e) => set("latencyP95ThresholdMs", e.target.value)}
+              placeholder="—"
+              className="h-9"
+            />
+          </FormField>
+          <FormField label="Uptime SLO (%)">
+            <Input
+              inputMode="decimal"
+              value={form.uptimeSloPercent}
+              onChange={(e) => set("uptimeSloPercent", e.target.value)}
+              placeholder="99.9"
+              className="h-9"
+            />
+          </FormField>
+        </FormRow>
+        <FormField label="Okno SLO (hodiny)">
+          <Input
+            inputMode="numeric"
+            value={form.sloWindowHours}
+            onChange={(e) => set("sloWindowHours", e.target.value)}
+            placeholder="24"
+            className="h-9 max-w-40"
+          />
+        </FormField>
+      </FormSection>
+
+      <FormSection title="Organizácia" hint="Skupiny a tagy pre filtre a status stránku.">
+        <FormRow>
+          <FormField label="Skupina">
+            <Input
+              value={form.groupName}
+              onChange={(e) => set("groupName", e.target.value)}
+              placeholder="Core API"
+              className="h-9"
+            />
+          </FormField>
+          <FormField label="Tagy" hint="Oddeľ čiarkou.">
+            <Input
+              value={form.tags}
+              onChange={(e) => set("tags", e.target.value)}
+              placeholder="prod, eu, api"
+              className="h-9"
+            />
+          </FormField>
+        </FormRow>
+        <CheckRow
+          checked={form.showOnStatusPage}
+          onCheckedChange={(checked) => set("showOnStatusPage", checked)}
+        >
+          Zobraziť na verejnej status stránke
+        </CheckRow>
+      </FormSection>
+
       <div className="flex flex-wrap gap-2.5">
         {onQuickCheck ? (
           <Button
@@ -306,5 +435,28 @@ export function MonitorForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+function FormSection({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <fieldset className="mb-5 border-t border-border pt-4">
+      <legend className="sr-only">{title}</legend>
+      <p className="font-heading text-[15px] font-black tracking-[-0.03em]">
+        {title}
+      </p>
+      {hint ? (
+        <p className="mb-3 mt-1 text-[13px] text-muted-foreground">{hint}</p>
+      ) : null}
+      {children}
+    </fieldset>
   );
 }

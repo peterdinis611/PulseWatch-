@@ -52,6 +52,11 @@ export interface MonitorConfig {
   expectedValue?: string | null;
   service?: string | null;
   topic?: string | null;
+  bodyContains?: string | null;
+  jsonPath?: string | null;
+  jsonExpected?: string | null;
+  headerName?: string | null;
+  headerExpected?: string | null;
 }
 
 export interface Monitor {
@@ -68,6 +73,14 @@ export interface Monitor {
   lastCheckedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  failureThreshold: number;
+  consecutiveFailures: number;
+  latencyP95ThresholdMs: number | null;
+  uptimeSloPercent: number | null;
+  sloWindowHours: number;
+  tags: string[];
+  groupName: string | null;
+  showOnStatusPage: boolean;
   config: MonitorConfig;
 }
 
@@ -106,6 +119,7 @@ export interface MonitorUptime {
   upChecks: number;
   uptimePercent: number;
   avgLatencyMs: number | null;
+  p95LatencyMs?: number | null;
 }
 
 export interface MonitorCheckResult {
@@ -162,8 +176,52 @@ export interface Notification {
   body: string;
   monitorId: string | null;
   stressTestId: string | null;
+  incidentId?: string | null;
   readAt: string | null;
   createdAt: string;
+}
+
+export type IncidentStatus = "OPEN" | "RESOLVED";
+
+export interface Incident {
+  id: string;
+  monitorId: string;
+  monitorName: string;
+  title: string;
+  status: IncidentStatus;
+  lastError: string | null;
+  openedAt: string;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StatusPageSettings {
+  id: string;
+  slug: string;
+  title: string;
+  isPublic: boolean;
+  updatedAt: string;
+}
+
+export type OverallStatus = MonitorStatus | "OPERATIONAL" | "DEGRADED" | string;
+
+export interface PublicStatusMonitor {
+  id: string;
+  name: string;
+  groupName: string | null;
+  tags: string[];
+  lastStatus: MonitorStatus;
+  lastCheckedAt: string | null;
+  uptimePercent24h: number | null;
+}
+
+export interface PublicStatusPage {
+  slug: string;
+  title: string;
+  overallStatus: OverallStatus;
+  monitors: PublicStatusMonitor[];
+  updatedAt: string;
 }
 
 export const MONITOR_TYPES: MonitorType[] = [

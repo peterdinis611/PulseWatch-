@@ -17,6 +17,7 @@ import { SETTINGS_QUERY, UPDATE_SETTINGS } from "@/shared/graphql/documents";
 import type { MonitorSettings } from "@/shared/lib/types";
 import { routes } from "@/shared/lib/routes";
 import { listPanelClass } from "@/shared/ui/list";
+import { StatusPageSection } from "@/features/settings/StatusPageSection";
 import { cn } from "@/lib/utils";
 
 const INTERVAL_MIN = 10;
@@ -370,7 +371,18 @@ export default function SettingsPage() {
                 Alerty →
               </Link>
               <p className="mt-1 text-[13px]">
-                História upozornení z floty.
+                Incidenty a história upozornení.
+              </p>
+            </li>
+            <li>
+              <a
+                href="#status-page"
+                className="text-foreground underline-offset-4 hover:underline"
+              >
+                Status stránka →
+              </a>
+              <p className="mt-1 text-[13px]">
+                Verejný prehľad floty bez loginu.
               </p>
             </li>
             <li>
@@ -382,6 +394,10 @@ export default function SettingsPage() {
           </ul>
         </aside>
       </form>
+
+      <div id="status-page" className="mt-5 scroll-mt-24 lg:max-w-[calc(100%-300px)]">
+        <StatusPageSection />
+      </div>
     </>
   );
 }

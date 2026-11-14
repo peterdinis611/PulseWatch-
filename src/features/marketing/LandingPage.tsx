@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AuthCard } from "@/features/auth/AuthCard";
 import { SignedInRedirect } from "@/features/auth/SignedInRedirect";
+import { HeroDeskScene } from "@/features/marketing/HeroDeskScene";
 import { LandingConstellation } from "@/features/marketing/LandingConstellation";
 import { LivePulse } from "@/features/marketing/LivePulse";
 import { Button } from "@/components/ui/button";
@@ -143,8 +144,13 @@ export function LandingPage() {
       </header>
 
       <main id="obsah">
-        <section className="relative grid min-h-[100svh] grid-rows-[1fr_auto] gap-10 px-5 pb-10 pt-24 md:px-10 md:pt-28">
-          <h1 className="self-end font-heading text-[clamp(40px,7.2vw,104px)] font-black leading-[0.94] tracking-[-0.05em]">
+        <section className="relative grid min-h-[100svh] grid-rows-[1fr_auto] gap-10 overflow-hidden px-5 pb-10 pt-24 md:px-10 md:pt-28">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[55%] bg-[radial-gradient(ellipse_at_78%_28%,color-mix(in_oklab,var(--primary)_14%,transparent),transparent_55%)]"
+          />
+          <HeroDeskScene className="hero-desk-scene pointer-events-none absolute top-[4%] right-[-4%] z-0 h-[min(42vh,340px)] w-[min(88vw,420px)] opacity-70 sm:opacity-85 md:top-[6%] md:right-[0%] md:h-[min(58vh,520px)] md:w-[min(70vw,640px)] md:opacity-95 lg:right-[4%]" />
+          <h1 className="relative z-[1] self-end font-heading text-[clamp(40px,7.2vw,104px)] font-black leading-[0.94] tracking-[-0.05em]">
             <span className="mask-line">
               <span className="whitespace-nowrap">PulseWatch.</span>
             </span>
@@ -155,7 +161,7 @@ export function LandingPage() {
               <span className="whitespace-nowrap">Skôr, ako to padne.</span>
             </span>
           </h1>
-          <div className="flex flex-col gap-8 border-t border-border pt-8 sm:flex-row sm:items-end sm:justify-between">
+          <div className="relative z-[1] flex flex-col gap-8 border-t border-border pt-8 sm:flex-row sm:items-end sm:justify-between">
             <p className="animate-rise max-w-[40ch] text-[clamp(16px,1.6vw,20px)] leading-snug text-muted-foreground [animation-delay:240ms]">
               Prehľad pre ľudí, ktorí prevádzkujú weby a API. Pridáš cieľ, on
               ho pravidelne skontroluje. Keď neodpovie, uvidíš to tu — nie až

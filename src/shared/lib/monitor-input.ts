@@ -7,9 +7,21 @@ export interface MonitorFormState {
   timeoutMs: string;
   enabled: boolean;
   alertsMuted: boolean;
+  failureThreshold: string;
+  latencyP95ThresholdMs: string;
+  uptimeSloPercent: string;
+  sloWindowHours: string;
+  tags: string;
+  groupName: string;
+  showOnStatusPage: boolean;
   httpUrl: string;
   httpMethod: string;
   httpStatus: string;
+  bodyContains: string;
+  jsonPath: string;
+  jsonExpected: string;
+  headerName: string;
+  headerExpected: string;
   redisUrl: string;
   databaseUrl: string;
   host: string;
@@ -34,9 +46,21 @@ const empty: MonitorFormState = {
   timeoutMs: "",
   enabled: true,
   alertsMuted: false,
+  failureThreshold: "1",
+  latencyP95ThresholdMs: "",
+  uptimeSloPercent: "",
+  sloWindowHours: "24",
+  tags: "",
+  groupName: "",
+  showOnStatusPage: false,
   httpUrl: "https://",
   httpMethod: "GET",
   httpStatus: "200",
+  bodyContains: "",
+  jsonPath: "",
+  jsonExpected: "",
+  headerName: "",
+  headerExpected: "",
   redisUrl: "redis://localhost:6379",
   databaseUrl: "postgres://localhost:5432/app",
   host: "localhost",
@@ -77,9 +101,21 @@ export function monitorToForm(monitor: Monitor): MonitorFormState {
     timeoutMs: String(monitor.timeoutMs),
     enabled: monitor.enabled,
     alertsMuted: monitor.alertsMuted,
+    failureThreshold: num(monitor.failureThreshold, "1"),
+    latencyP95ThresholdMs: num(monitor.latencyP95ThresholdMs),
+    uptimeSloPercent: num(monitor.uptimeSloPercent),
+    sloWindowHours: num(monitor.sloWindowHours, "24"),
+    tags: (monitor.tags ?? []).join(", "),
+    groupName: str(monitor.groupName),
+    showOnStatusPage: Boolean(monitor.showOnStatusPage),
     httpUrl: str(c.url, empty.httpUrl),
     httpMethod: str(c.method, "GET"),
     httpStatus: num(c.expectedStatus, "200"),
+    bodyContains: str(c.bodyContains),
+    jsonPath: str(c.jsonPath),
+    jsonExpected: str(c.jsonExpected),
+    headerName: str(c.headerName),
+    headerExpected: str(c.headerExpected),
     redisUrl: type === "REDIS" ? str(c.url, empty.redisUrl) : empty.redisUrl,
     databaseUrl:
       type === "DATABASE" ? str(c.url, empty.databaseUrl) : empty.databaseUrl,
@@ -120,12 +156,39 @@ function optionalStr(value: string): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
+export function parseTags(value: string): string[] {
+  const seen = new Set<string>();
+  for (const part of value.split(",")) {
+    const tag = part.trim();
+    if (tag) seen.add(tag);
+  }
+  return [...seen];
+}
+
+function nullableNumber(value: string): number | null {
+  return optionalNumber(value) ?? null;
+}
+
+function optionalNumber(value: string): number | undefined {
+  const trimmed = value.trim().replace(",", ".");
+  if (!trimmed) return undefined;
+  const n = Number(trimmed);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 export function formToMonitorInput(form: MonitorFormState) {
   const input: Record<string, unknown> = {
     name: form.name.trim(),
     type: form.type,
     enabled: form.enabled,
     alertsMuted: form.alertsMuted,
+    failureThreshold: optionalInt(form.failureThreshold) ?? 1,
+    latencyP95ThresholdMs: optionalInt(form.latencyP95ThresholdMs) ?? null,
+    uptimeSloPercent: nullableNumber(form.uptimeSloPercent),
+    sloWindowHours: optionalInt(form.sloWindowHours) ?? 24,
+    tags: parseTags(form.tags),
+    groupName: optionalStr(form.groupName) ?? null,
+    showOnStatusPage: form.showOnStatusPage,
   };
   const interval = optionalInt(form.intervalSec);
   const timeout = optionalInt(form.timeoutMs);
@@ -138,6 +201,11 @@ export function formToMonitorInput(form: MonitorFormState) {
         url: form.httpUrl.trim(),
         method: form.httpMethod,
         expectedStatus: optionalInt(form.httpStatus),
+        bodyContains: optionalStr(form.bodyContains) ?? null,
+        jsonPath: optionalStr(form.jsonPath) ?? null,
+        jsonExpected: optionalStr(form.jsonExpected) ?? null,
+        headerName: optionalStr(form.headerName) ?? null,
+        headerExpected: optionalStr(form.headerExpected) ?? null,
       };
       break;
     case "REDIS":
