@@ -8,12 +8,12 @@ import {
   BellOff,
   CheckCircle2,
   CircleHelp,
-  Filter,
   ListFilter,
   Pause,
   Play,
   RefreshCw,
   Search,
+  SlidersHorizontal,
   Trash2,
   X,
   XCircle,
@@ -24,13 +24,17 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FleetBanner } from "@/features/monitors/FleetBanner";
 import { buildMonitorColumns } from "@/features/monitors/monitor-columns";
@@ -41,7 +45,11 @@ import {
   setMonitorEnabled,
   setMonitorMuted,
 } from "@/features/monitors/monitor-actions";
-import type { Monitor } from "@/shared/lib/types";
+import type {
+  Monitor,
+  MonitorStatus,
+  MonitorType,
+} from "@/shared/lib/types";
 import { MONITOR_TYPES } from "@/shared/lib/types";
 import { monitorsWith, routes } from "@/shared/lib/routes";
 import { DataTable } from "@/shared/ui/data-table";
@@ -278,7 +286,7 @@ export function MonitorList({
         allSelected,
         someSelected,
         showActions: true,
-        compactActions: variant === "preview",
+        compactActions: true,
         onToggle: (id, next) => {
           setSelectedIds((prev) => {
             const copy = new Set(prev);
@@ -365,17 +373,25 @@ export function MonitorList({
     />
   );
 
+  const advancedFilterCount = [
+    monitorType !== "ALL",
+    enabledFilter !== "ALL",
+    mutedFilter !== "ALL",
+    groupFilter !== "ALL",
+    Boolean(tagFilter.trim()),
+  ].filter(Boolean).length;
+
   if (filterable || variant === "fleet") {
     return (
       <Card className="gap-0 overflow-hidden py-0 ring-1 ring-foreground/10">
         <FleetBanner embedded />
-        <div className={listToolbarClass("space-y-4")}>
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="relative block min-w-[min(100%,280px)] flex-1">
+        <div className={listToolbarClass("space-y-3 py-3")}>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="relative block min-w-[min(100%,240px)] flex-1">
               <span className="sr-only">Search monitors</span>
-              <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
-                className="h-10 border-border bg-background pl-9"
+                className="h-9 border-border bg-background pl-9"
                 value={query}
                 onChange={(event) => {
                   const value = event.target.value;
@@ -385,10 +401,150 @@ export function MonitorList({
                 placeholder="Search name, type, URL…"
               />
             </label>
-            <Badge variant="outline" className="h-8 gap-1.5 font-mono tabular-nums">
-              <Filter className="size-3.5 text-muted-foreground" />
-              {visible.length} / {monitors.length}
+
+            <StatusFacets
+              value={status}
+              counts={counts}
+              total={monitors.length}
+              onChange={(next) => {
+                setStatus(next);
+                writeUrl({ status: next });
+              }}
+            />
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-1.5"
+                  aria-label="More filters"
+                >
+                  <SlidersHorizontal className="size-3.5" />
+                  Filters
+                  {advancedFilterCount > 0 ? (
+                    <Badge
+                      variant="secondary"
+                      className="h-5 min-w-5 justify-center rounded-md px-1 font-mono text-[10px]"
+                    >
+                      {advancedFilterCount}
+                    </Badge>
+                  ) : null}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-[min(100vw-2rem,320px)] space-y-3">
+                <div>
+                  <p className="font-medium text-foreground">More filters</p>
+                  <p className="mt-0.5 text-[12px] text-muted-foreground">
+                    Narrow by type, state, alerts, group, or tag.
+                  </p>
+                </div>
+                <div className="grid gap-3">
+                  <FilterSelect
+                    label="Type"
+                    value={monitorType}
+                    onChange={(value) => {
+                      const next = value as TypeFilter;
+                      setMonitorType(next);
+                      writeUrl({ type: next });
+                    }}
+                    options={TYPE_FILTERS.map((option) => ({
+                      value: option,
+                      label: option === "ALL" ? "All types" : option,
+                    }))}
+                  />
+                  <FilterSelect
+                    label="State"
+                    value={enabledFilter}
+                    onChange={(value) => {
+                      const next = value as EnabledFilter;
+                      setEnabledFilter(next);
+                      writeUrl({ enabled: next });
+                    }}
+                    options={[
+                      { value: "ALL", label: "All" },
+                      {
+                        value: "RUNNING",
+                        label: `Running (${monitors.length - counts.paused})`,
+                      },
+                      {
+                        value: "PAUSED",
+                        label: `Paused (${counts.paused})`,
+                      },
+                    ]}
+                  />
+                  <FilterSelect
+                    label="Alerts"
+                    value={mutedFilter}
+                    onChange={(value) => {
+                      const next = value as MutedFilter;
+                      setMutedFilter(next);
+                      writeUrl({ muted: next });
+                    }}
+                    options={[
+                      { value: "ALL", label: "All" },
+                      {
+                        value: "LIVE",
+                        label: `Live (${monitors.length - counts.muted})`,
+                      },
+                      {
+                        value: "MUTED",
+                        label: `Muted (${counts.muted})`,
+                      },
+                    ]}
+                  />
+                  {groups.length > 0 ? (
+                    <FilterSelect
+                      label="Group"
+                      value={groupFilter}
+                      onChange={(value) => {
+                        setGroupFilter(value);
+                        writeUrl({ group: value });
+                      }}
+                      options={[
+                        { value: "ALL", label: "All groups" },
+                        ...groups.map((g) => ({ value: g, label: g })),
+                      ]}
+                    />
+                  ) : null}
+                  {tags.length > 0 ? (
+                    <FilterSelect
+                      label="Tag"
+                      value={tagFilter || "__all__"}
+                      onChange={(value) => {
+                        const next = value === "__all__" ? "" : value;
+                        setTagFilter(next);
+                        writeUrl({ tag: next });
+                      }}
+                      options={[
+                        { value: "__all__", label: "All tags" },
+                        ...tags.map((t) => ({ value: t, label: `#${t}` })),
+                      ]}
+                    />
+                  ) : null}
+                </div>
+                {advancedFilterCount > 0 ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full"
+                    onClick={clearFilters}
+                  >
+                    Reset filters
+                  </Button>
+                ) : null}
+              </PopoverContent>
+            </Popover>
+
+            <Badge
+              variant="outline"
+              className="h-9 gap-1.5 rounded-md px-2.5 font-mono text-[12px] tabular-nums"
+            >
+              {visible.length}/{monitors.length}
             </Badge>
+
             {filtersActive ? (
               <Button
                 type="button"
@@ -401,97 +557,6 @@ export function MonitorList({
                 Clear
               </Button>
             ) : null}
-          </div>
-
-          <div className="flex flex-wrap items-end gap-x-5 gap-y-3">
-            <StatusFacets
-              value={status}
-              counts={counts}
-              total={monitors.length}
-              onChange={(next) => {
-                setStatus(next);
-                writeUrl({ status: next });
-              }}
-            />
-            <Separator orientation="vertical" className="hidden h-10 sm:block" />
-            <div className="flex flex-wrap items-end gap-2.5">
-              <FilterSelect
-                label="Type"
-                value={monitorType}
-                onChange={(value) => {
-                  const next = value as TypeFilter;
-                  setMonitorType(next);
-                  writeUrl({ type: next });
-                }}
-                options={TYPE_FILTERS.map((option) => ({
-                  value: option,
-                  label: option === "ALL" ? "All types" : option,
-                }))}
-              />
-              <FilterSelect
-                label="State"
-                value={enabledFilter}
-                onChange={(value) => {
-                  const next = value as EnabledFilter;
-                  setEnabledFilter(next);
-                  writeUrl({ enabled: next });
-                }}
-                options={[
-                  { value: "ALL", label: "All" },
-                  {
-                    value: "RUNNING",
-                    label: `Running (${monitors.length - counts.paused})`,
-                  },
-                  { value: "PAUSED", label: `Paused (${counts.paused})` },
-                ]}
-              />
-              <FilterSelect
-                label="Alerts"
-                value={mutedFilter}
-                onChange={(value) => {
-                  const next = value as MutedFilter;
-                  setMutedFilter(next);
-                  writeUrl({ muted: next });
-                }}
-                options={[
-                  { value: "ALL", label: "All" },
-                  {
-                    value: "LIVE",
-                    label: `Live (${monitors.length - counts.muted})`,
-                  },
-                  { value: "MUTED", label: `Muted (${counts.muted})` },
-                ]}
-              />
-              {groups.length > 0 ? (
-                <FilterSelect
-                  label="Group"
-                  value={groupFilter}
-                  onChange={(value) => {
-                    setGroupFilter(value);
-                    writeUrl({ group: value });
-                  }}
-                  options={[
-                    { value: "ALL", label: "All groups" },
-                    ...groups.map((g) => ({ value: g, label: g })),
-                  ]}
-                />
-              ) : null}
-              {tags.length > 0 ? (
-                <FilterSelect
-                  label="Tag"
-                  value={tagFilter || "__all__"}
-                  onChange={(value) => {
-                    const next = value === "__all__" ? "" : value;
-                    setTagFilter(next);
-                    writeUrl({ tag: next });
-                  }}
-                  options={[
-                    { value: "__all__", label: "All tags" },
-                    ...tags.map((t) => ({ value: t, label: `#${t}` })),
-                  ]}
-                />
-              ) : null}
-            </div>
           </div>
         </div>
         <div className="min-w-0 overflow-x-auto">{table}</div>
@@ -662,20 +727,30 @@ function StatusFacets({
     icon: typeof ListFilter;
   }[] = [
     { id: "ALL", label: "All", count: total, icon: ListFilter },
-    { id: "UP", label: "UP", count: counts.up, tone: "text-up", icon: CheckCircle2 },
-    { id: "DOWN", label: "DOWN", count: counts.down, tone: "text-down", icon: XCircle },
-    { id: "UNKNOWN", label: "?", count: counts.unknown, icon: CircleHelp },
+    {
+      id: "UP",
+      label: "UP",
+      count: counts.up,
+      tone: "text-up",
+      icon: CheckCircle2,
+    },
+    {
+      id: "DOWN",
+      label: "DOWN",
+      count: counts.down,
+      tone: "text-down",
+      icon: XCircle,
+    },
+    {
+      id: "UNKNOWN",
+      label: "?",
+      count: counts.unknown,
+      icon: CircleHelp,
+    },
   ];
 
   return (
-    <div
-      role="radiogroup"
-      aria-label="Status"
-      className="flex flex-wrap items-center gap-1.5"
-    >
-      <span className="mr-0.5 text-[12px] font-medium tracking-wide text-muted-foreground uppercase">
-        Status
-      </span>
+    <div role="radiogroup" aria-label="Status">
       <ToggleGroup
         type="single"
         value={value}
@@ -692,18 +767,15 @@ function StatusFacets({
               key={facet.id}
               value={facet.id}
               aria-label={facet.id}
-              className="h-8 gap-1.5 rounded-md px-2.5 text-[12px] tracking-wide data-[state=on]:border-foreground data-[state=on]:bg-foreground data-[state=on]:text-background"
+              className="h-9 gap-1 rounded-md px-2 text-[12px] data-[state=on]:border-foreground data-[state=on]:bg-foreground data-[state=on]:text-background"
             >
               <Icon
-                className={cn(
-                  "size-3.5",
-                  value !== facet.id && facet.tone,
-                )}
+                className={cn("size-3.5", value !== facet.id && facet.tone)}
               />
-              <span>{facet.label}</span>
+              <span className="hidden sm:inline">{facet.label}</span>
               <span
                 className={cn(
-                  "font-mono tabular-nums opacity-75",
+                  "font-mono tabular-nums opacity-80",
                   value !== facet.id && facet.tone,
                 )}
               >
@@ -733,10 +805,7 @@ function FilterSelect({
 
   return (
     <div className="grid gap-1.5">
-      <Label
-        htmlFor={id}
-        className="text-[12px] font-medium tracking-wide text-muted-foreground uppercase"
-      >
+      <Label htmlFor={id} className="text-[12px] text-muted-foreground">
         {label}
       </Label>
       <Select value={value} onValueChange={onChange}>
@@ -744,7 +813,7 @@ function FilterSelect({
           id={id}
           aria-label={label}
           size="sm"
-          className="min-w-[9.5rem] border-border bg-background"
+          className="w-full border-border bg-background"
         >
           <SelectValue placeholder={label}>
             {selected?.label ?? label}

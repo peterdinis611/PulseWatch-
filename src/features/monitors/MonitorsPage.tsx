@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
-import { Plus, Radar } from "lucide-react";
+import { Plus } from "lucide-react";
 import { MonitorList } from "@/features/monitors/MonitorList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,7 +30,7 @@ export default function MonitorsPage() {
     <>
       <PageHeader
         title="Monitors"
-        lede="Your entire fleet in one place. Filters are saved in the URL."
+        lede="Search, filter, and act on the fleet. Filters sync to the URL."
         actions={
           <Button asChild size="lg" className="gap-1.5">
             <Link href={routes.monitorNew}>
@@ -58,10 +58,10 @@ export default function MonitorsPage() {
         <Suspense
           fallback={
             <Card className="gap-0 py-0">
-              <CardContent className="grid gap-3 p-6">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-2/3" />
-                <Skeleton className="h-24 w-full" />
+              <CardContent className="grid gap-3 p-5">
+                <Skeleton className="h-9 w-full" />
+                <Skeleton className="h-9 w-1/2" />
+                <Skeleton className="h-28 w-full" />
               </CardContent>
             </Card>
           }
@@ -73,12 +73,6 @@ export default function MonitorsPage() {
           />
         </Suspense>
       )}
-      {monitors.length > 0 ? (
-        <p className="mt-4 flex items-center gap-2 text-[12px] text-muted-foreground">
-          <Radar className="size-3.5" />
-          Probes refresh live. Use filters to focus the fleet.
-        </p>
-      ) : null}
     </>
   );
 }

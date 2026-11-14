@@ -91,7 +91,7 @@ export function DataTable<T extends RowData>({
               return (
                 <TableHead
                   key={header.id}
-                  className="hidden h-auto px-5 py-2.5 text-[13px] font-medium text-muted-foreground first:pl-5 last:pr-5 md:table-cell"
+                  className="hidden h-auto px-4 py-2 text-[12px] font-medium text-muted-foreground first:pl-4 last:pr-4 md:table-cell"
                 >
                   {header.isPlaceholder ? null : canSort ? (
                     <button
@@ -171,7 +171,7 @@ export function DataTable<T extends RowData>({
               {row.getVisibleCells().map((cell) => (
                 <TableCell
                   key={cell.id}
-                  className="px-6 py-4 align-middle whitespace-normal first:pl-6 last:pr-6 md:whitespace-nowrap [&:nth-child(2)]:pl-4"
+                  className="px-4 py-2.5 align-middle whitespace-normal first:pl-4 last:pr-4 md:whitespace-nowrap"
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>

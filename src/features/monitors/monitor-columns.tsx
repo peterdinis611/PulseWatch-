@@ -1,6 +1,7 @@
 "use client";
 
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   MonitorFlags,
@@ -8,16 +9,22 @@ import {
 } from "@/features/monitors/MonitorRowActions";
 import { formatAgo, formatMs, targetOf } from "@/shared/lib/format";
 import type { Monitor } from "@/shared/lib/types";
-import {
-  metaClass,
-  monoClass,
-  nameClass,
-  typeBadgeClass,
-} from "@/shared/ui/list";
+import { metaClass, monoClass, nameClass } from "@/shared/ui/list";
 import { StatusBadge } from "@/shared/ui/status-badge";
 import { cn } from "@/lib/utils";
 
 const columnHelper = createColumnHelper<Monitor>();
+
+function visibleTags(monitor: Monitor) {
+  const typeKey = monitor.type.toLowerCase();
+  const unique = [...new Set(monitor.tags ?? [])].filter(
+    (tag) => tag.toLowerCase() !== typeKey,
+  );
+  return {
+    shown: unique.slice(0, 2),
+    more: Math.max(0, unique.length - 2),
+  };
+}
 
 export function buildMonitorColumns({
   selectable = false,
@@ -47,7 +54,9 @@ export function buildMonitorColumns({
         header: () => (
           <div data-no-row-nav onClick={(event) => event.stopPropagation()}>
             <Checkbox
-              checked={allSelected ? true : someSelected ? "indeterminate" : false}
+              checked={
+                allSelected ? true : someSelected ? "indeterminate" : false
+              }
               onCheckedChange={(value) => onToggleAll?.(value === true)}
               aria-label="Select all"
             />
@@ -65,6 +74,7 @@ export function buildMonitorColumns({
           </div>
         ),
         enableSorting: false,
+        size: 40,
       }),
     );
   }
@@ -74,28 +84,49 @@ export function buildMonitorColumns({
       header: "Status",
       cell: ({ getValue }) => <StatusBadge value={getValue()} />,
       enableSorting: true,
+      size: 100,
     }) as ColumnDef<Monitor>,
     columnHelper.accessor("name", {
       header: "Monitor",
-      cell: ({ row }) => (
-        <div className="min-w-0">
-          <div className={nameClass}>{row.original.name}</div>
-          <span className={typeBadgeClass}>{row.original.type}</span>
-          <MonitorFlags monitor={row.original} />
-          {row.original.groupName || row.original.tags?.length ? (
-            <div className="mt-1 flex flex-wrap gap-x-2 text-[12px] text-muted-foreground">
-              {row.original.groupName ? (
-                <span className="text-foreground/70">
-                  {row.original.groupName}/
-                </span>
-              ) : null}
-              {(row.original.tags ?? []).map((tag) => (
-                <span key={tag}>#{tag}</span>
-              ))}
+      cell: ({ row }) => {
+        const { shown, more } = visibleTags(row.original);
+        return (
+          <div className="min-w-0 max-w-[320px]">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className={cn(nameClass, "truncate")}>
+                {row.original.name}
+              </span>
+              <span className="shrink-0 font-mono text-[10px] tracking-wide text-primary/80 uppercase">
+                {row.original.type}
+              </span>
             </div>
-          ) : null}
-        </div>
-      ),
+            {(row.original.groupName || shown.length > 0 || more > 0) && (
+              <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1">
+                {row.original.groupName ? (
+                  <span className="truncate text-[12px] text-muted-foreground">
+                    {row.original.groupName}
+                  </span>
+                ) : null}
+                {shown.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    className="h-5 rounded-md px-1.5 text-[10px] font-normal text-muted-foreground"
+                  >
+                    #{tag}
+                  </Badge>
+                ))}
+                {more > 0 ? (
+                  <span className="text-[11px] text-muted-foreground">
+                    +{more}
+                  </span>
+                ) : null}
+              </div>
+            )}
+            <MonitorFlags monitor={row.original} />
+          </div>
+        );
+      },
       enableSorting: true,
     }) as ColumnDef<Monitor>,
     columnHelper.display({
@@ -103,7 +134,7 @@ export function buildMonitorColumns({
       header: "Target",
       cell: ({ row }) => (
         <div
-          className={cn(metaClass, "max-w-[min(360px,40vw)]")}
+          className={cn(metaClass, "max-w-[240px] text-[13px]")}
           title={targetOf(row.original)}
         >
           {targetOf(row.original)}
@@ -111,7 +142,7 @@ export function buildMonitorColumns({
       ),
     }),
     columnHelper.accessor("lastLatencyMs", {
-      header: "ms",
+      header: "Latency",
       cell: ({ getValue }) => (
         <span className={cn(monoClass, "tabular-nums")}>
           {formatMs(getValue())}
@@ -120,9 +151,10 @@ export function buildMonitorColumns({
       enableSorting: true,
       sortingFn: (a, b) =>
         (a.original.lastLatencyMs ?? -1) - (b.original.lastLatencyMs ?? -1),
+      size: 88,
     }) as ColumnDef<Monitor>,
     columnHelper.accessor("lastCheckedAt", {
-      header: "Last check",
+      header: "Checked",
       cell: ({ getValue }) => (
         <span className={cn(monoClass, "tabular-nums")}>
           {formatAgo(getValue())}
@@ -138,6 +170,7 @@ export function buildMonitorColumns({
           : 0;
         return left - right;
       },
+      size: 104,
     }) as ColumnDef<Monitor>,
   );
 
@@ -153,6 +186,7 @@ export function buildMonitorColumns({
           />
         ),
         enableSorting: false,
+        size: 96,
       }),
     );
   }

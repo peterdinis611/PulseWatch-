@@ -51,7 +51,9 @@ describe("MonitorList", () => {
     const user = userEvent.setup();
 
     render(<MonitorList monitors={monitors} filterable />);
-    await user.selectOptions(screen.getByLabelText("Type"), "REDIS");
+    await user.click(screen.getByRole("button", { name: "More filters" }));
+    await user.click(screen.getByRole("combobox", { name: "Type" }));
+    await user.click(await screen.findByRole("option", { name: "REDIS" }));
 
     expect(screen.getByText("Redis")).toBeInTheDocument();
     expect(screen.queryByText("Pdf App")).not.toBeInTheDocument();
@@ -83,7 +85,7 @@ describe("MonitorList", () => {
   it("shows status facets with counts and fleet strip", () => {
     render(<MonitorList monitors={monitors} filterable />);
 
-    expect(screen.getByText("3 / 3")).toBeInTheDocument();
+    expect(screen.getByText("3/3")).toBeInTheDocument();
     expect(screen.getByTestId("fleet-banner")).toBeInTheDocument();
 
     const status = screen.getByRole("radiogroup", { name: "Status" });

@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { usePoll } from "@/shared/hooks/usePoll";
 import { gql } from "@/shared/graphql/client";
 import { FLEET_UPTIME_QUERY, SETTINGS_QUERY } from "@/shared/graphql/documents";
@@ -39,64 +38,60 @@ export function FleetBanner({ embedded = false }: { embedded?: boolean }) {
       : null;
   const checksLabel =
     uptime && uptime.monitorCount > 0
-      ? `${uptime.totalChecks} checks / 24h`
-      : "No uptime data yet";
+      ? `${uptime.totalChecks} checks`
+      : "No data yet";
 
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 md:px-5",
+        "flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 md:px-5",
         embedded
-          ? "border-b border-border bg-card"
-          : "animate-rise mb-6 rounded-xl border border-border bg-card",
+          ? "border-b border-border/80 bg-muted/20"
+          : "animate-rise mb-4 rounded-xl border border-border bg-card",
       )}
     >
-      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
-        <span className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-background text-primary">
-          <Activity className="size-4" />
-        </span>
-        <div className="min-w-0">
-          <p className="font-heading text-[14px] font-black tracking-[-0.03em]">
-            Fleet 24h
-          </p>
-          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[13px] text-muted-foreground">
-            {uptimePercent ? (
-              <>
-                <span className="font-mono tabular-nums text-up">
-                  {uptimePercent}
-                </span>
-                <Separator orientation="vertical" className="h-3" />
-                <span className="font-mono tabular-nums">{checksLabel}</span>
-              </>
-            ) : (
-              <span>{checksLabel}</span>
-            )}
-          </div>
-        </div>
+      <div className="flex min-w-0 flex-wrap items-center gap-2 text-[13px]">
+        <Activity className="size-3.5 shrink-0 text-primary" />
+        <span className="font-medium text-foreground">Fleet 24h</span>
+        {uptimePercent ? (
+          <>
+            <span className="text-muted-foreground">·</span>
+            <span className="font-mono tabular-nums text-up">{uptimePercent}</span>
+            <span className="text-muted-foreground">·</span>
+            <span className="font-mono tabular-nums text-muted-foreground">
+              {checksLabel}
+            </span>
+          </>
+        ) : (
+          <span className="text-muted-foreground">{checksLabel}</span>
+        )}
         {settings?.fleetAlertsMuted ? (
           <Badge
             variant="outline"
-            className="gap-1 border-warn/40 text-warn"
+            className="h-5 gap-1 border-warn/40 px-1.5 text-[10px] text-warn"
           >
-            <PauseCircle className="size-3" />
-            Alerts muted
+            <PauseCircle className="size-2.5" />
+            Muted
           </Badge>
         ) : null}
         {maintenanceActive ? (
           <Badge
             variant="outline"
-            className="gap-1 border-warn/40 text-warn"
+            className="h-5 gap-1 border-warn/40 px-1.5 text-[10px] text-warn"
           >
-            <AlertTriangle className="size-3" />
-            Maintenance until{" "}
-            {new Date(settings!.maintenanceUntil!).toLocaleString("en-US")}
+            <AlertTriangle className="size-2.5" />
+            Maintenance
           </Badge>
         ) : null}
       </div>
-      <Button asChild variant="ghost" size="sm" className="gap-1.5">
+      <Button
+        asChild
+        variant="ghost"
+        size="icon-sm"
+        aria-label="Fleet settings"
+      >
         <Link href={routes.settings}>
           <Settings className="size-3.5" />
-          Settings
         </Link>
       </Button>
     </div>

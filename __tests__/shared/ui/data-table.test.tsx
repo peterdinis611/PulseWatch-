@@ -104,10 +104,10 @@ describe("DataTable", () => {
 
     expect(rowNames()).toEqual(["Slow", "Fast"]);
 
-    await user.click(screen.getByRole("button", { name: /^ms/i }));
+    await user.click(screen.getByRole("button", { name: /^Latency/i }));
     expect(rowNames()).toEqual(["Slow", "Fast"]);
 
-    await user.click(screen.getByRole("button", { name: /^ms/i }));
+    await user.click(screen.getByRole("button", { name: /^Latency/i }));
     expect(rowNames()).toEqual(["Fast", "Slow"]);
   });
 

@@ -1,9 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import {
+  Bell,
+  BellRing,
+  CheckCheck,
+  Inbox,
+  Siren,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { IncidentsPanel } from "@/features/alerts/IncidentsPanel";
 import { gql, gqlMessage, subscribeGql } from "@/shared/graphql/client";
 import { toast } from "sonner";
 import {
@@ -15,10 +27,8 @@ import {
 import { formatAgo } from "@/shared/lib/format";
 import type { Notification } from "@/shared/lib/types";
 import { useSession } from "@/shared/session";
-import { IncidentsPanel } from "@/features/alerts/IncidentsPanel";
 import { PageHeader } from "@/shared/ui/page-header";
 import { StatusBadge } from "@/shared/ui/status-badge";
-import { listPanelClass, monoClass } from "@/shared/ui/list";
 import { cn } from "@/lib/utils";
 
 type Filter = "all" | "unread";
@@ -29,55 +39,41 @@ function notificationHref(item: Notification): string | null {
   return null;
 }
 
-type Tab = "incidents" | "notifications";
-
 export default function AlertsPage() {
-  const router = useRouter();
-  const [tab, setTab] = useState<Tab>("incidents");
+  const { unread } = useSession();
+  const [tab, setTab] = useState("incidents");
 
   return (
     <>
       <PageHeader
         title="Alerts"
-        lede="Open incidents and the notification feed. Incidents open on DOWN and resolve on recovery."
+        lede="Incidents open on DOWN and resolve on recovery. Notifications stay in the feed."
       />
 
-      <div role="tablist" className="mb-4 flex gap-5 border-b border-border">
-        {(
-          [
-            ["incidents", "Incidents"],
-            ["notifications", "Notifications"],
-          ] as const
-        ).map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            role="tab"
-            aria-selected={tab === value}
-            onClick={() => setTab(value)}
-            className={cn(
-              "-mb-px border-b-2 px-1 pb-2.5 text-[15px] transition-colors",
-              tab === value
-                ? "border-primary font-medium text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <Tabs value={tab} onValueChange={setTab} className="gap-4">
+        <TabsList variant="line" className="w-full justify-start gap-1">
+          <TabsTrigger value="incidents" className="gap-1.5 px-3">
+            <Siren className="size-3.5" />
+            Incidents
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="gap-1.5 px-3">
+            <BellRing className="size-3.5" />
+            Notifications
+            {unread > 0 ? (
+              <Badge className="h-5 min-w-5 justify-center rounded-md px-1 font-mono text-[10px]">
+                {unread > 99 ? "99+" : unread}
+              </Badge>
+            ) : null}
+          </TabsTrigger>
+        </TabsList>
 
-      {tab === "incidents" ? <IncidentsPanel /> : <NotificationsPanel />}
-
-      <p className="mt-6 text-center">
-        <button
-          type="button"
-          className={`${monoClass} text-muted-foreground underline-offset-4 hover:text-foreground hover:underline`}
-          onClick={() => router.push("/overview")}
-        >
-          ← Back to overview
-        </button>
-      </p>
+        <TabsContent value="incidents" className="mt-0">
+          <IncidentsPanel />
+        </TabsContent>
+        <TabsContent value="notifications" className="mt-0">
+          <NotificationsPanel />
+        </TabsContent>
+      </Tabs>
     </>
   );
 }
@@ -157,84 +153,115 @@ function NotificationsPanel() {
     filter === "unread" ? items.filter((item) => !item.readAt) : items;
 
   return (
-    <>
-      <section className={listPanelClass("animate-rise")}>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-4">
-          <div className="flex gap-2">
-            {(["all", "unread"] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setFilter(value)}
-                className={cn(
-                  "border-b-2 px-1 pb-2 text-[14px] transition-colors",
-                  filter === value
-                    ? "border-foreground font-medium text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {value === "all" ? "All" : "Unread"}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <p className={monoClass}>
-              {visible.length} {visible.length === 1 ? "entry" : "entries"} · {unread} unread
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={unread === 0}
-              onClick={markAll}
-            >
-              Mark all as read
-            </Button>
-          </div>
+    <Card className="animate-rise gap-0 overflow-hidden py-0 ring-1 ring-foreground/10">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 px-4 py-3 md:px-5">
+        <ToggleGroup
+          type="single"
+          value={filter}
+          onValueChange={(next) => {
+            if (next) setFilter(next as Filter);
+          }}
+          variant="outline"
+          className="flex flex-wrap gap-1"
+          aria-label="Notification filter"
+        >
+          <ToggleGroupItem
+            value="all"
+            className="h-8 gap-1.5 rounded-md px-2.5 text-[12px] data-[state=on]:border-foreground data-[state=on]:bg-foreground data-[state=on]:text-background"
+          >
+            <Inbox className="size-3.5" />
+            All
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="unread"
+            className="h-8 gap-1.5 rounded-md px-2.5 text-[12px] data-[state=on]:border-foreground data-[state=on]:bg-foreground data-[state=on]:text-background"
+          >
+            <Bell className="size-3.5" />
+            Unread
+          </ToggleGroupItem>
+        </ToggleGroup>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge
+            variant="outline"
+            className="h-7 gap-1.5 rounded-md px-2 font-mono text-[12px] tabular-nums"
+          >
+            {visible.length} · {unread} unread
+          </Badge>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5"
+            disabled={unread === 0}
+            onClick={() => void markAll()}
+          >
+            <CheckCheck className="size-3.5" />
+            Mark all read
+          </Button>
         </div>
+      </div>
 
-        {error ? (
-          <p className="px-5 py-4 text-sm text-destructive">{error}</p>
-        ) : null}
+      {error ? (
+        <p className="px-4 py-4 text-sm text-destructive md:px-5">{error}</p>
+      ) : null}
 
-        {!loaded ? (
-          <p className="px-5 py-10 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Loading…
+      {!loaded ? (
+        <div className="grid gap-3 px-4 py-5 md:px-5">
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+        </div>
+      ) : visible.length === 0 ? (
+        <div className="grid justify-items-start gap-2 px-4 py-12 md:px-5">
+          <span className="inline-flex size-10 items-center justify-center rounded-md border border-border bg-muted/30 text-muted-foreground">
+            <Bell className="size-5" />
+          </span>
+          <p className="font-heading text-[22px] font-black tracking-[-0.04em]">
+            All quiet
           </p>
-        ) : visible.length === 0 ? (
-          <div className="px-5 py-14">
-            <p className="font-heading text-3xl tracking-[-0.05em]">All quiet.</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {filter === "unread"
-                ? "Everything is read."
-                : "When something goes down or a k6 run finishes, it will show up here."}
-            </p>
-          </div>
-        ) : (
-          visible.map((item) => {
+          <p className="max-w-[42ch] text-[14px] text-muted-foreground">
+            {filter === "unread"
+              ? "Everything is read."
+              : "Outages and finished load tests show up here."}
+          </p>
+        </div>
+      ) : (
+        <ul>
+          {visible.map((item) => {
             const href = notificationHref(item);
             const rowClass = cn(
-              "grid w-full grid-cols-[auto_minmax(0,1fr)] gap-4 border-b border-border/60 px-5 py-4 text-left last:border-b-0",
-              !item.readAt && "bg-primary/5 shadow-[inset_3px_0_0_var(--primary)]",
-              href && "transition-colors hover:bg-muted/30",
+              "grid w-full grid-cols-[auto_minmax(0,1fr)] gap-3 border-b border-border/60 px-4 py-3.5 text-left last:border-b-0 md:gap-4 md:px-5",
+              !item.readAt &&
+                "bg-primary/[0.04] shadow-[inset_3px_0_0_var(--primary)]",
+              href && "transition-colors hover:bg-muted/25",
             );
             const content = (
               <>
                 <StatusBadge value={item.type} />
                 <div className="min-w-0">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <p className="font-heading text-lg tracking-[-0.04em]">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-heading text-[15px] font-medium tracking-[-0.03em]">
                       {item.title}
                     </p>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "h-5 rounded-md px-1.5 font-mono text-[10px]",
+                        item.readAt
+                          ? "text-muted-foreground"
+                          : "border-primary/40 text-primary",
+                      )}
+                    >
                       {item.readAt ? "READ" : "NEW"}
-                    </span>
+                    </Badge>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
-                  <p className="mt-2 font-mono text-[10px] text-muted-foreground">
+                  <p className="mt-1 text-[13px] text-muted-foreground">
+                    {item.body}
+                  </p>
+                  <p className="mt-1.5 font-mono text-[11px] text-muted-foreground">
                     {formatAgo(item.createdAt)}
                     {item.incidentId ? " · incident" : ""}
-                    {href ? " · details →" : ""}
+                    {href ? " · open details" : ""}
                   </p>
                 </div>
               </>
@@ -242,35 +269,36 @@ function NotificationsPanel() {
 
             if (href) {
               return (
-                <Link
-                  key={item.id}
-                  href={href}
+                <li key={item.id}>
+                  <Link
+                    href={href}
+                    className={rowClass}
+                    onClick={() => {
+                      if (!item.readAt) void markOne(item.id);
+                    }}
+                  >
+                    {content}
+                  </Link>
+                </li>
+              );
+            }
+
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
                   className={rowClass}
                   onClick={() => {
                     if (!item.readAt) void markOne(item.id);
                   }}
                 >
                   {content}
-                </Link>
-              );
-            }
-
-            return (
-              <button
-                key={item.id}
-                type="button"
-                className={rowClass}
-                onClick={() => {
-                  if (!item.readAt) void markOne(item.id);
-                }}
-              >
-                {content}
-              </button>
+                </button>
+              </li>
             );
-          })
-        )}
-      </section>
-
-    </>
+          })}
+        </ul>
+      )}
+    </Card>
   );
 }

@@ -2,7 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import {
+  Bell,
+  BellOff,
+  Copy,
+  ExternalLink,
+  MoreHorizontal,
+  Pause,
+  Play,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -60,9 +71,10 @@ export function MonitorRowActions({
       {!compact ? (
         <Button
           type="button"
-          size="sm"
+          size="icon-sm"
           variant="ghost"
           disabled={busy || !monitor.enabled}
+          aria-label={`Check ${monitor.name}`}
           onClick={() =>
             void wrap("Check failed.", async () => {
               const next = await runMonitorCheck(monitor.id);
@@ -70,7 +82,7 @@ export function MonitorRowActions({
             })
           }
         >
-          Check
+          <RefreshCw className="size-3.5" />
         </Button>
       ) : null}
       <DropdownMenu>
@@ -85,7 +97,7 @@ export function MonitorRowActions({
             <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-44">
+        <DropdownMenuContent align="end" className="min-w-48">
           <DropdownMenuItem
             disabled={!monitor.enabled}
             onClick={() =>
@@ -95,16 +107,24 @@ export function MonitorRowActions({
               })
             }
           >
+            <RefreshCw className="size-4" />
             Check now
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() =>
               void wrap("Status change failed.", async () => {
                 await setMonitorEnabled(monitor.id, !monitor.enabled);
-                toast.success(monitor.enabled ? "Monitor paused." : "Monitor resumed.");
+                toast.success(
+                  monitor.enabled ? "Monitor paused." : "Monitor resumed.",
+                );
               })
             }
           >
+            {monitor.enabled ? (
+              <Pause className="size-4" />
+            ) : (
+              <Play className="size-4" />
+            )}
             {monitor.enabled ? "Pause" : "Resume"}
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -117,6 +137,11 @@ export function MonitorRowActions({
               })
             }
           >
+            {monitor.alertsMuted ? (
+              <Bell className="size-4" />
+            ) : (
+              <BellOff className="size-4" />
+            )}
             {monitor.alertsMuted ? "Unmute alerts" : "Mute alerts"}
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -128,9 +153,13 @@ export function MonitorRowActions({
               })
             }
           >
+            <Copy className="size-4" />
             Duplicate
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push(routes.monitor(monitor.id))}>
+          <DropdownMenuItem
+            onClick={() => router.push(routes.monitor(monitor.id))}
+          >
+            <ExternalLink className="size-4" />
             Open
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -144,6 +173,7 @@ export function MonitorRowActions({
               });
             }}
           >
+            <Trash2 className="size-4" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -159,14 +189,27 @@ export function MonitorFlags({ monitor }: { monitor: Monitor }) {
     monitor.failureThreshold > 1;
   if (monitor.enabled && !monitor.alertsMuted && !softFail) return null;
   return (
-    <span className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[12px] text-muted-foreground">
-      {!monitor.enabled ? <span>paused</span> : null}
-      {monitor.alertsMuted ? <span>muted</span> : null}
-      {softFail ? (
-        <span className="text-warn">
-          soft {monitor.consecutiveFailures}/{monitor.failureThreshold}
-        </span>
+    <div className="mt-1.5 flex flex-wrap gap-1">
+      {!monitor.enabled ? (
+        <Badge variant="outline" className="h-5 gap-1 px-1.5 text-[10px]">
+          <Pause className="size-2.5" />
+          paused
+        </Badge>
       ) : null}
-    </span>
+      {monitor.alertsMuted ? (
+        <Badge variant="outline" className="h-5 gap-1 px-1.5 text-[10px]">
+          <BellOff className="size-2.5" />
+          muted
+        </Badge>
+      ) : null}
+      {softFail ? (
+        <Badge
+          variant="outline"
+          className="h-5 gap-1 border-warn/40 px-1.5 text-[10px] text-warn"
+        >
+          soft {monitor.consecutiveFailures}/{monitor.failureThreshold}
+        </Badge>
+      ) : null}
+    </div>
   );
 }
