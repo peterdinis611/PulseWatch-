@@ -12,7 +12,7 @@ describe("list class helpers", () => {
     expect(listRowClass("opacity-55")).toContain("opacity-55");
     expect(listRowClass()).toContain("grid");
     expect(fleetRowClass()).toContain("group");
-    expect(listPanelClass()).toContain("rounded-[24px]");
+    expect(listPanelClass()).toContain("rounded-lg");
     expect(splitClass("mt-4")).toContain("mt-4");
     expect(noteClass).toContain("border-primary");
   });

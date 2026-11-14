@@ -19,7 +19,7 @@ describe("formatWhen", () => {
     expect(formatWhen("not-a-date")).toBe("—");
   });
 
-  it("formats a valid timestamp in sk-SK", () => {
+  it("formats a valid timestamp in en-GB", () => {
     const result = formatWhen("2026-09-03T12:00:00.000Z");
     expect(result).not.toBe("—");
     expect(result.length).toBeGreaterThan(4);
@@ -31,22 +31,22 @@ describe("formatAgo", () => {
     vi.useRealTimers();
   });
 
-  it("returns nikdy when missing", () => {
-    expect(formatAgo(null)).toBe("nikdy");
+  it("returns never when missing", () => {
+    expect(formatAgo(null)).toBe("never");
   });
 
-  it("returns teraz for the last few seconds", () => {
+  it("returns just now for the last few seconds", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-09-03T12:00:00.000Z"));
-    expect(formatAgo("2026-09-03T11:59:56.000Z")).toBe("teraz");
+    expect(formatAgo("2026-09-03T11:59:56.000Z")).toBe("just now");
   });
 
   it("returns seconds then minutes then hours", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-09-03T12:00:00.000Z"));
-    expect(formatAgo("2026-09-03T11:59:20.000Z")).toBe("pred 40 s");
-    expect(formatAgo("2026-09-03T11:50:00.000Z")).toBe("pred 10 min");
-    expect(formatAgo("2026-09-03T09:00:00.000Z")).toBe("pred 3 h");
+    expect(formatAgo("2026-09-03T11:59:20.000Z")).toBe("40s ago");
+    expect(formatAgo("2026-09-03T11:50:00.000Z")).toBe("10m ago");
+    expect(formatAgo("2026-09-03T09:00:00.000Z")).toBe("3h ago");
   });
 });
 

@@ -1,7 +1,7 @@
 const STARS = [
   { id: "http", name: "HTTP", status: "UP" as const, x: 70, y: 118 },
   { id: "redis", name: "Redis", status: "UP" as const, x: 175, y: 72 },
-  { id: "db", name: "Databáza", status: "DOWN" as const, x: 290, y: 128 },
+  { id: "db", name: "Database", status: "DOWN" as const, x: 290, y: 128 },
   { id: "tcp", name: "TCP", status: "UP" as const, x: 400, y: 64 },
   { id: "ssl", name: "SSL", status: "UP" as const, x: 505, y: 122 },
   { id: "dns", name: "DNS", status: "UP" as const, x: 615, y: 70 },
@@ -24,10 +24,10 @@ export function LandingConstellation() {
       role="img"
       aria-labelledby="constellation-title constellation-desc"
     >
-      <title id="constellation-title">Deväť typov monitorov PulseWatch</title>
+      <title id="constellation-title">Nine PulseWatch monitor types</title>
       <desc id="constellation-desc">
-        Konštelácia ukazuje HTTP, Redis, databázu, TCP, SSL, DNS, SMTP, Kafka a
-        gRPC. Zelená je hore, červená dole.
+        The constellation shows HTTP, Redis, database, TCP, SSL, DNS, SMTP,
+        Kafka, and gRPC. Green is UP, red is DOWN.
       </desc>
       {STARS.slice(1).map((star, i) => (
         <line

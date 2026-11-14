@@ -2,7 +2,7 @@ export function formatWhen(value: string | null | undefined): string {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("sk-SK", {
+  return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
@@ -12,17 +12,17 @@ export function formatWhen(value: string | null | undefined): string {
 }
 
 export function formatAgo(value: string | null | undefined): string {
-  if (!value) return "nikdy";
+  if (!value) return "never";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
   const diff = Date.now() - date.getTime();
   const sec = Math.max(0, Math.round(diff / 1000));
-  if (sec < 10) return "teraz";
-  if (sec < 60) return `pred ${sec} s`;
+  if (sec < 10) return "just now";
+  if (sec < 60) return `${sec}s ago`;
   const min = Math.round(sec / 60);
-  if (min < 60) return `pred ${min} min`;
+  if (min < 60) return `${min}m ago`;
   const hours = Math.round(min / 60);
-  if (hours < 24) return `pred ${hours} h`;
+  if (hours < 24) return `${hours}h ago`;
   return formatWhen(value);
 }
 
@@ -53,7 +53,7 @@ export function targetOf(monitor: {
 }
 
 export function clockNow(): string {
-  return new Intl.DateTimeFormat("sk-SK", {
+  return new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",

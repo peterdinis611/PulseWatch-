@@ -6,10 +6,10 @@ describe("LandingConstellation", () => {
   it("exposes the nine monitor types to assistive tech", () => {
     render(<LandingConstellation />);
     expect(
-      screen.getByRole("img", { name: /deväť typov monitorov pulsewatch/i }),
+      screen.getByRole("img", { name: /nine pulsewatch monitor types/i }),
     ).toBeInTheDocument();
     expect(screen.getByText("HTTP")).toBeInTheDocument();
     expect(screen.getByText("gRPC")).toBeInTheDocument();
-    expect(screen.getByText("Databáza")).toBeInTheDocument();
+    expect(screen.getByText("Database")).toBeInTheDocument();
   });
 });

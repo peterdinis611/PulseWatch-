@@ -25,7 +25,7 @@ export function LivePulse() {
   return (
     <dl className="grid grid-cols-1 gap-6 sm:grid-cols-3">
       <div>
-        <dt className="text-[13px] text-muted-foreground">Čas</dt>
+        <dt className="text-[13px] text-muted-foreground">Time</dt>
         <dd className="mt-1 font-heading text-[28px] font-black tracking-[-0.04em] tabular-nums">
           {clock}
         </dd>
@@ -41,7 +41,7 @@ export function LivePulse() {
         </dd>
       </div>
       <div>
-        <dt className="text-[13px] text-muted-foreground">Databáza</dt>
+        <dt className="text-[13px] text-muted-foreground">Database</dt>
         <dd
           className={`mt-1 font-heading text-[28px] font-black tracking-[-0.04em] ${
             health ? (dbOk ? "text-up" : "text-down") : "text-foreground"

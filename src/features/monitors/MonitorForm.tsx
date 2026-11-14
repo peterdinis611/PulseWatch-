@@ -58,7 +58,7 @@ export function MonitorForm({
   return (
     <form onSubmit={handleSubmit}>
       <FormError>{error}</FormError>
-      <FormField label="Názov">
+      <FormField label="Name">
         <Input
           required
           maxLength={120}
@@ -73,7 +73,7 @@ export function MonitorForm({
         onChange={(value) => set("type", value as MonitorFormState["type"])}
       />
       <FormRow>
-        <FormField label="Interval s">
+        <FormField label="Interval (s)">
           <Input
             inputMode="numeric"
             value={form.intervalSec}
@@ -82,7 +82,7 @@ export function MonitorForm({
             className="h-9"
           />
         </FormField>
-        <FormField label="Timeout ms">
+        <FormField label="Timeout (ms)">
           <Input
             inputMode="numeric"
             value={form.timeoutMs}
@@ -96,13 +96,13 @@ export function MonitorForm({
         checked={form.enabled}
         onCheckedChange={(checked) => set("enabled", checked)}
       >
-        Monitor je zapnutý
+        Monitor enabled
       </CheckRow>
       <CheckRow
         checked={form.alertsMuted}
         onCheckedChange={(checked) => set("alertsMuted", checked)}
       >
-        Stíšiť alerty (údržba / deploy)
+        Mute alerts (maintenance / deploy)
       </CheckRow>
 
       {form.type === "HTTP" ? (
@@ -116,14 +116,14 @@ export function MonitorForm({
             />
           </FormField>
           <FormRow>
-            <FormField label="Metóda">
+            <FormField label="Method">
               <EnumSelect
                 value={form.httpMethod}
                 onChange={(value) => set("httpMethod", value)}
                 options={HTTP_METHODS}
               />
             </FormField>
-            <FormField label="Očakávaný status">
+            <FormField label="Expected status">
               <Input
                 inputMode="numeric"
                 value={form.httpStatus}
@@ -132,8 +132,8 @@ export function MonitorForm({
               />
             </FormField>
           </FormRow>
-          <FormSection title="Asercie odpovede" hint="Voliteľné. Prázdne polia sa nekontrolujú.">
-            <FormField label="Telo obsahuje">
+          <FormSection title="Response assertions" hint="Optional. Empty fields are not checked.">
+            <FormField label="Body contains">
               <Input
                 value={form.bodyContains}
                 onChange={(e) => set("bodyContains", e.target.value)}
@@ -150,7 +150,7 @@ export function MonitorForm({
                   className="h-9"
                 />
               </FormField>
-              <FormField label="JSON očakávané">
+              <FormField label="JSON expected value">
                 <Input
                   value={form.jsonExpected}
                   onChange={(e) => set("jsonExpected", e.target.value)}
@@ -160,7 +160,7 @@ export function MonitorForm({
               </FormField>
             </FormRow>
             <FormRow>
-              <FormField label="Hlavička">
+              <FormField label="Header">
                 <Input
                   value={form.headerName}
                   onChange={(e) => set("headerName", e.target.value)}
@@ -168,7 +168,7 @@ export function MonitorForm({
                   className="h-9"
                 />
               </FormField>
-              <FormField label="Hlavička očakávaná">
+              <FormField label="Header expected value">
                 <Input
                   value={form.headerExpected}
                   onChange={(e) => set("headerExpected", e.target.value)}
@@ -236,7 +236,7 @@ export function MonitorForm({
               className="h-9"
             />
           </FormField>
-          <FormField label="Min. dni do expirácie">
+          <FormField label="Min. days until expiry">
             <Input
               inputMode="numeric"
               value={form.minDays}
@@ -265,7 +265,7 @@ export function MonitorForm({
               />
             </FormField>
           </FormRow>
-          <FormField label="Očakávaná hodnota">
+          <FormField label="Expected value">
             <Input
               value={form.expectedValue}
               onChange={(e) => set("expectedValue", e.target.value)}
@@ -333,19 +333,19 @@ export function MonitorForm({
           checked={form.allowUnauthorized}
           onCheckedChange={(checked) => set("allowUnauthorized", checked)}
         >
-          Povoliť neoverený certifikát
+          Allow unverified certificate
         </CheckRow>
       )}
 
       <FormSection
         title="Soft DOWN"
-        hint="Monitor prejde na DOWN až po N po sebe idúcich zlyhaniach."
+        hint="The monitor switches to DOWN only after N consecutive failures."
       >
         <FormField
-          label="Prah zlyhaní"
+          label="Failure threshold"
           hint={
             consecutiveFailures != null
-              ? `Aktuálne po sebe idúcich zlyhaní: ${consecutiveFailures}`
+              ? `Current consecutive failures: ${consecutiveFailures}`
               : undefined
           }
         >
@@ -359,9 +359,9 @@ export function MonitorForm({
         </FormField>
       </FormSection>
 
-      <FormSection title="SLO" hint="Cieľ latencie a dostupnosti v okne.">
+      <FormSection title="SLO" hint="Latency and availability targets within the SLO window.">
         <FormRow>
-          <FormField label="p95 latencia max (ms)">
+          <FormField label="Max p95 latency (ms)">
             <Input
               inputMode="numeric"
               value={form.latencyP95ThresholdMs}
@@ -380,7 +380,7 @@ export function MonitorForm({
             />
           </FormField>
         </FormRow>
-        <FormField label="Okno SLO (hodiny)">
+        <FormField label="SLO window (hours)">
           <Input
             inputMode="numeric"
             value={form.sloWindowHours}
@@ -391,9 +391,9 @@ export function MonitorForm({
         </FormField>
       </FormSection>
 
-      <FormSection title="Organizácia" hint="Skupiny a tagy pre filtre a status stránku.">
+      <FormSection title="Organization" hint="Groups and tags for filters and the status page.">
         <FormRow>
-          <FormField label="Skupina">
+          <FormField label="Group">
             <Input
               value={form.groupName}
               onChange={(e) => set("groupName", e.target.value)}
@@ -401,7 +401,7 @@ export function MonitorForm({
               className="h-9"
             />
           </FormField>
-          <FormField label="Tagy" hint="Oddeľ čiarkou.">
+          <FormField label="Tags" hint="Separate with commas.">
             <Input
               value={form.tags}
               onChange={(e) => set("tags", e.target.value)}
@@ -414,7 +414,7 @@ export function MonitorForm({
           checked={form.showOnStatusPage}
           onCheckedChange={(checked) => set("showOnStatusPage", checked)}
         >
-          Zobraziť na verejnej status stránke
+          Show on public status page
         </CheckRow>
       </FormSection>
 
@@ -427,11 +427,11 @@ export function MonitorForm({
             size="lg"
             onClick={() => onQuickCheck(formToMonitorInput(form))}
           >
-            {checking ? "Kontrolujem…" : "Rýchla kontrola"}
+            {checking ? "Checking…" : "Quick check"}
           </Button>
         ) : null}
         <Button disabled={busy || checking} type="submit" size="lg">
-          {busy ? "Ukladám…" : submitLabel}
+          {busy ? "Saving…" : submitLabel}
         </Button>
       </div>
     </form>

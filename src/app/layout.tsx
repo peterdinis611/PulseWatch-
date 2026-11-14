@@ -91,7 +91,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="sk"
+      lang="en"
       className={cn(
         "dark scroll-smooth",
         display.variable,

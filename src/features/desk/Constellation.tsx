@@ -30,7 +30,7 @@ export function Constellation({ monitors }: { monitors: Monitor[] }) {
   const source =
     monitors.length > 0
       ? monitors
-      : [{ id: "idle", name: "žiadny monitor", lastStatus: "UNKNOWN" as const }];
+      : [{ id: "idle", name: "no monitors", lastStatus: "UNKNOWN" as const }];
 
   const points = source.map((monitor, index, all) => {
     const t = all.length === 1 ? 0.5 : index / (all.length - 1);
@@ -46,10 +46,11 @@ export function Constellation({ monitors }: { monitors: Monitor[] }) {
 
   return (
     <svg
-      className="block h-[min(280px,38vw)] min-h-[220px] w-full"
+      className="block h-[min(220px,32vw)] min-h-[180px] w-full max-w-full"
       viewBox="0 0 1000 240"
+      preserveAspectRatio="xMidYMid meet"
       role="img"
-      aria-label="Stav monitorov v konštelácii"
+      aria-label="Monitor status constellation"
     >
       <defs>
         <radialGradient id="constellation-vignette" cx="50%" cy="45%" r="70%">

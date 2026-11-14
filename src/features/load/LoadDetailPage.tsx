@@ -72,13 +72,13 @@ export default function LoadDetailPage() {
       await gql<{ runStressTest: StressTest }>(RUN_STRESS, { id });
       await reload();
       await refresh();
-      toast.success("k6 spustený.", {
-        description: "Výsledky prídu, keď dopíše summary.",
+      toast.success("k6 started.", {
+        description: "Results will arrive once it finishes writing the summary.",
       });
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);
-      toast.error("Spustenie zlyhalo.", { description: message });
+      toast.error("Failed to start the run.", { description: message });
     } finally {
       setBusy(false);
     }
@@ -89,12 +89,12 @@ export default function LoadDetailPage() {
     try {
       await gql(DELETE_STRESS, { id });
       await refresh();
-      toast.success("Scenár zmazaný.");
+      toast.success("Scenario deleted.");
       router.replace("/load");
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);
-      toast.error("Zmazanie zlyhalo.", { description: message });
+      toast.error("Failed to delete the scenario.", { description: message });
       setBusy(false);
     }
   }
@@ -111,7 +111,7 @@ export default function LoadDetailPage() {
 
   return (
     <>
-      <BackLink href="/load">Späť na záťaž</BackLink>
+      <BackLink href="/load">Back to load</BackLink>
       <header className="mb-7 flex flex-col items-start justify-between gap-6 md:flex-row">
         <div>
           <p className={monoClass}>k6</p>
@@ -123,9 +123,9 @@ export default function LoadDetailPage() {
           </p>
           {test.scheduleEnabled && test.scheduleIntervalSec ? (
             <p className={`${monoClass} mt-2 text-primary`}>
-              Plán každých {test.scheduleIntervalSec}s
+              Scheduled every {test.scheduleIntervalSec}s
               {test.scheduleLastRunAt
-                ? ` · naposledy ${formatWhen(test.scheduleLastRunAt)}`
+                ? ` · last run ${formatWhen(test.scheduleLastRunAt)}`
                 : ""}
             </p>
           ) : null}
@@ -138,7 +138,7 @@ export default function LoadDetailPage() {
             onClick={run}
             size="lg"
           >
-            {test.lastStatus === "RUNNING" ? "Beží…" : "Spustiť k6"}
+            {test.lastStatus === "RUNNING" ? "Running…" : "Run k6"}
           </Button>
           {confirmDelete ? (
             <Button
@@ -148,7 +148,7 @@ export default function LoadDetailPage() {
               onClick={remove}
               size="lg"
             >
-              Naozaj zmazať
+              Confirm delete
             </Button>
           ) : (
             <Button
@@ -157,7 +157,7 @@ export default function LoadDetailPage() {
               onClick={() => setConfirmDelete(true)}
               size="lg"
             >
-              Zmazať
+              Delete
             </Button>
           )}
         </div>
@@ -186,7 +186,7 @@ export default function LoadDetailPage() {
         <StressForm
           key={test.updatedAt}
           initial={toForm(test)}
-          submitLabel="Uložiť scenár"
+          submitLabel="Save scenario"
           busy={busy}
           error={null}
           onSubmit={async (input) => {
@@ -198,20 +198,20 @@ export default function LoadDetailPage() {
                 input,
               });
               await reload();
-              toast.success("Scenár uložený.");
+              toast.success("Scenario saved.");
             } catch (err) {
               const message = gqlMessage(err);
               setError(message);
-              toast.error("Uloženie zlyhalo.", { description: message });
+              toast.error("Failed to save the scenario.", { description: message });
             } finally {
               setBusy(false);
             }
           }}
         />
         <section>
-          <p className={`${monoClass} mb-3`}>História</p>
+          <p className={`${monoClass} mb-3`}>History</p>
           {runs.length === 0 ? (
-            <p className="text-muted-foreground">Zatiaľ žiadny beh.</p>
+            <p className="text-muted-foreground">No runs yet.</p>
           ) : (
             runs.map((item) => (
               <article

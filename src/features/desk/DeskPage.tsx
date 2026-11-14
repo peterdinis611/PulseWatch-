@@ -1,9 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Constellation } from "@/features/desk/Constellation";
+import {
+  AddWidgetDialog,
+  DeskCustomizeBar,
+  EditableFrame,
+  RenameWidgetDialog,
+  WidgetEditToolbar,
+} from "@/features/desk/desk-customize";
+import {
+  availableWidgetTypes,
+  widgetTitle,
+  type DeskWidgetInstance,
+} from "@/features/desk/desk-layout";
+import { useDeskLayout } from "@/features/desk/use-desk-layout";
+import {
+  AttentionWidget,
+  fleetHealthOf,
+  HealthBanner,
+  IncidentsWidget,
+  LatencyWidget,
+  LoadRunsWidget,
+  MetricStrip,
+  ShortcutsWidget,
+  Widget,
+} from "@/features/desk/desk-widgets";
 import { MonitorList } from "@/features/monitors/MonitorList";
 import { Button } from "@/components/ui/button";
 import { EmptyState, PageHeader } from "@/shared/ui/page-header";
@@ -18,12 +42,27 @@ import type {
 } from "@/shared/lib/types";
 import { useSession } from "@/shared/session";
 import { monitorsWith, routes } from "@/shared/lib/routes";
-import { listPanelClass } from "@/shared/ui/list";
-import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function DeskPage() {
   const router = useRouter();
   const { monitors } = useSession();
+  const {
+    layout,
+    editing,
+    setEditing,
+    addWidget,
+    removeWidget,
+    renameWidget,
+    moveWidget,
+    changeColumn,
+    resetLayout,
+  } = useDeskLayout();
+  const [addOpen, setAddOpen] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<DeskWidgetInstance | null>(
+    null,
+  );
+
   const { data } = usePoll(
     () =>
       gql<{
@@ -34,12 +73,15 @@ export default function DeskPage() {
       }>(DESK_QUERY),
     8000,
   );
+
   const loads = data?.stressTests ?? [];
   const uptime = data?.fleetUptime;
   const openIncidents = data?.incidents ?? [];
   const statusPage = data?.myStatusPage;
+
   const up = monitors.filter((m) => m.lastStatus === "UP").length;
   const down = monitors.filter((m) => m.lastStatus === "DOWN").length;
+  const unknown = monitors.filter((m) => m.lastStatus === "UNKNOWN").length;
   const softFailing = monitors.filter(
     (m) =>
       m.lastStatus !== "DOWN" &&
@@ -49,169 +91,362 @@ export default function DeskPage() {
   const running = loads.filter((t) => t.lastStatus === "RUNNING").length;
   const downMonitors = monitors.filter((m) => m.lastStatus === "DOWN");
   const previewMonitors =
-    downMonitors.length > 0 ? downMonitors : monitors.slice(0, 6);
+    downMonitors.length > 0 ? downMonitors : monitors.slice(0, 8);
+
   const uptimeLabel =
     uptime && uptime.monitorCount > 0
       ? `${uptime.avgUptimePercent.toFixed(1)}%`
       : "—";
+  const checksLabel =
+    uptime && uptime.monitorCount > 0 ? String(uptime.totalChecks) : "—";
+
+  const health = fleetHealthOf({
+    monitorCount: monitors.length,
+    down,
+    softFailing,
+    openIncidents: openIncidents.length,
+  });
+
+  const statusHref = statusPage
+    ? statusPage.isPublic
+      ? routes.status(statusPage.slug)
+      : routes.settings
+    : routes.settings;
+
+  const columns = useMemo(() => {
+    return {
+      full: layout.widgets.filter((w) => w.column === "full"),
+      main: layout.widgets.filter((w) => w.column === "main"),
+      side: layout.widgets.filter((w) => w.column === "side"),
+    };
+  }, [layout.widgets]);
+
+  function toolbarFor(widget: DeskWidgetInstance) {
+    if (!editing) return null;
+    return (
+      <WidgetEditToolbar
+        widget={widget}
+        layout={layout}
+        onMove={(direction) => moveWidget(widget.id, direction)}
+        onColumn={(column) => changeColumn(widget.id, column)}
+        onRename={() => setRenameTarget(widget)}
+        onRemove={() => {
+          removeWidget(widget.id);
+          toast.success("Widget removed.", {
+            description: "You can add it again from Customize.",
+          });
+        }}
+      />
+    );
+  }
+
+  function renderWidget(widget: DeskWidgetInstance) {
+    const title = widgetTitle(widget);
+    const toolbar = toolbarFor(widget);
+
+    switch (widget.type) {
+      case "health":
+        return (
+          <EditableFrame editing={editing} key={widget.id}>
+            <div className="relative">
+              {editing ? (
+                <div className="absolute top-2 right-2 z-10 rounded-md border border-border bg-card/95 p-0.5 shadow-sm">
+                  {toolbar}
+                </div>
+              ) : null}
+              <HealthBanner
+                health={health}
+                uptimeLabel={uptimeLabel}
+                checksLabel={checksLabel}
+              />
+            </div>
+          </EditableFrame>
+        );
+      case "metrics":
+        return (
+          <EditableFrame editing={editing} key={widget.id}>
+            <div className="relative">
+              {editing ? (
+                <div className="absolute top-2 right-2 z-10 rounded-md border border-border bg-card/95 p-0.5 shadow-sm">
+                  {toolbar}
+                </div>
+              ) : null}
+              <MetricStrip
+                items={[
+                  {
+                    label: "Up",
+                    value: up,
+                    suffix: `/ ${monitors.length}`,
+                    tone: "up",
+                    onClick: () => router.push(monitorsWith({ status: "UP" })),
+                  },
+                  {
+                    label: "Down",
+                    value: down,
+                    tone: down ? "down" : "muted",
+                    onClick: () =>
+                      router.push(monitorsWith({ status: "DOWN" })),
+                  },
+                  {
+                    label: "Soft DOWN",
+                    value: softFailing,
+                    tone: softFailing ? "warn" : "muted",
+                    onClick: () => router.push(routes.monitors),
+                  },
+                  {
+                    label: "Unknown",
+                    value: unknown,
+                    tone: "muted",
+                    onClick: () =>
+                      router.push(monitorsWith({ status: "UNKNOWN" })),
+                  },
+                  {
+                    label: "Open incidents",
+                    value: openIncidents.length,
+                    tone: openIncidents.length ? "down" : "muted",
+                    onClick: () => router.push(routes.alerts),
+                  },
+                  {
+                    label: "k6 running",
+                    value: running,
+                    tone: running ? "run" : "muted",
+                    onClick: () => router.push(routes.load),
+                  },
+                ]}
+              />
+            </div>
+          </EditableFrame>
+        );
+      case "fleet_map":
+        return (
+          <EditableFrame editing={editing} key={widget.id}>
+            <Widget
+              title={title}
+              toolbar={toolbar}
+              action={
+                <Link
+                  href={routes.monitors}
+                  className="text-[13px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                >
+                  All monitors →
+                </Link>
+              }
+              bodyClassName="px-1 pb-1 pt-1 md:px-3"
+            >
+              {monitors.length === 0 ? (
+                <p className="px-3 py-6 text-[14px] text-muted-foreground">
+                  Add a monitor to populate the fleet map.
+                </p>
+              ) : (
+                <Constellation monitors={monitors} />
+              )}
+            </Widget>
+          </EditableFrame>
+        );
+      case "latest_checks":
+        return (
+          <EditableFrame editing={editing} key={widget.id}>
+            {monitors.length === 0 ? (
+              <Widget title={title} toolbar={toolbar}>
+                <p className="text-[14px] text-muted-foreground">
+                  Latest checks appear after the first probe.
+                </p>
+              </Widget>
+            ) : (
+              <div className="relative">
+                {editing ? (
+                  <div className="absolute top-3 right-3 z-10 rounded-md border border-border bg-card/95 p-0.5 shadow-sm">
+                    {toolbar}
+                  </div>
+                ) : null}
+                <Suspense fallback={null}>
+                  <MonitorList
+                    monitors={previewMonitors}
+                    variant="preview"
+                    previewTitle={title}
+                    previewKicker={
+                      downMonitors.length > 0
+                        ? "Prioritized by current outage"
+                        : "Most recent probes across the fleet"
+                    }
+                    showAllHref={
+                      downMonitors.length > 0
+                        ? monitorsWith({ status: "DOWN" })
+                        : routes.monitors
+                    }
+                  />
+                </Suspense>
+              </div>
+            )}
+          </EditableFrame>
+        );
+      case "incidents":
+        return (
+          <EditableFrame editing={editing} key={widget.id}>
+            <IncidentsWidget
+              incidents={openIncidents}
+              title={title}
+              toolbar={toolbar}
+            />
+          </EditableFrame>
+        );
+      case "attention":
+        return (
+          <EditableFrame editing={editing} key={widget.id}>
+            <AttentionWidget
+              monitors={monitors}
+              title={title}
+              toolbar={toolbar}
+            />
+          </EditableFrame>
+        );
+      case "latency":
+        return (
+          <EditableFrame editing={editing} key={widget.id}>
+            <LatencyWidget
+              monitors={monitors}
+              title={title}
+              toolbar={toolbar}
+            />
+          </EditableFrame>
+        );
+      case "shortcuts":
+        return (
+          <EditableFrame editing={editing} key={widget.id}>
+            <ShortcutsWidget
+              statusHref={statusHref}
+              statusPublic={Boolean(statusPage?.isPublic)}
+              title={title}
+              toolbar={toolbar}
+            />
+          </EditableFrame>
+        );
+      case "load_runs":
+        return (
+          <EditableFrame editing={editing} key={widget.id}>
+            <LoadRunsWidget tests={loads} title={title} toolbar={toolbar} />
+          </EditableFrame>
+        );
+      default:
+        return null;
+    }
+  }
+
+  const canAdd = availableWidgetTypes(layout).length > 0;
+  const boardEmpty = layout.widgets.length === 0;
 
   return (
     <>
       <PageHeader
-        title="Čo je hore"
-        lede="Bod v konštelácii je monitor. Klikni naň, alebo prejdi do zoznamu."
+        title="Overview"
+        lede="Fleet health, active incidents, and the checks that need your eyes first."
         actions={
           <>
+            <DeskCustomizeBar
+              editing={editing}
+              onToggleEditing={() => setEditing((value) => !value)}
+              onAddOpen={() => setAddOpen(true)}
+              canAdd={canAdd}
+              onReset={() => {
+                resetLayout();
+                toast.success("Layout reset.", {
+                  description: "Default Overview widgets restored.",
+                });
+              }}
+            />
             <Button asChild size="lg">
-              <Link href={routes.monitorNew}>Nový monitor</Link>
+              <Link href={routes.monitorNew}>New monitor</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href={routes.loadNew}>Nová záťaž</Link>
+              <Link href={routes.loadNew}>New load test</Link>
             </Button>
           </>
         }
       />
 
-      {(openIncidents.length > 0 || softFailing > 0 || statusPage?.isPublic) && (
-        <div className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-2 border border-border bg-card px-4 py-3 text-[14px]">
-          {openIncidents.length > 0 ? (
-            <Link
-              href={routes.alerts}
-              className="text-down underline-offset-4 hover:underline"
-            >
-              {openIncidents.length} otvorených incidentov →
-            </Link>
-          ) : null}
-          {softFailing > 0 ? (
-            <span className="text-warn">
-              Soft DOWN: {softFailing} monitorov pod prahom
-            </span>
-          ) : null}
-          {statusPage?.isPublic ? (
-            <Link
-              href={routes.status(statusPage.slug)}
-              target="_blank"
-              className="ml-auto text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-            >
-              Status stránka →
-            </Link>
-          ) : null}
-        </div>
-      )}
+      {editing ? (
+        <p className="mb-4 border border-primary/30 bg-card px-4 py-2.5 text-[13px] text-muted-foreground">
+          Customize mode — reorder, rename, move columns, remove widgets, or add
+          new ones. Changes save automatically in this browser.
+        </p>
+      ) : null}
 
-      <section className={cn(listPanelClass("animate-rise mb-8"))}>
-        <div className="relative overflow-hidden px-1 pt-1 pb-0 md:px-3">
-          <Constellation monitors={monitors} />
-        </div>
-
-        <div className="grid grid-cols-1 gap-px border-t border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
-          <DeskStat
-            label="Hore"
-            value={up}
-            suffix={`/ ${monitors.length}`}
-            tone="up"
-            delay={0}
-            onClick={() => router.push(monitorsWith({ status: "UP" }))}
-          />
-          <DeskStat
-            label="Dole"
-            value={down}
-            tone={down ? "down" : "muted"}
-            delay={1}
-            onClick={() => router.push(monitorsWith({ status: "DOWN" }))}
-          />
-          <DeskStat
-            label="Uptime 24h"
-            value={uptimeLabel}
-            tone="up"
-            delay={2}
-            onClick={() => router.push(routes.monitors)}
-          />
-          <DeskStat
-            label="k6 beží"
-            value={running}
-            tone="run"
-            delay={3}
-            onClick={() => router.push(routes.load)}
-          />
-        </div>
-      </section>
-
-      {monitors.length === 0 ? (
+      {boardEmpty ? (
         <EmptyState
-          title="Zatiaľ ticho"
+          title="No widgets on the board"
           action={
-            <Button asChild size="lg">
-              <Link href={routes.monitorNew}>Pridať monitor</Link>
+            <Button type="button" size="lg" onClick={() => setAddOpen(true)}>
+              Add widget
             </Button>
           }
         >
-          Pridaj HTTP monitor na službu, ktorú chceš vidieť v konštelácii.
+          Start from a blank Overview or reset to the default layout.
         </EmptyState>
       ) : (
-        <Suspense fallback={null}>
-          <MonitorList
-            monitors={previewMonitors}
-            variant="preview"
-            previewTitle={
-              downMonitors.length > 0 ? "Monitory dole" : "Posledné kontroly"
-            }
-            showAllHref={
-              downMonitors.length > 0
-                ? monitorsWith({ status: "DOWN" })
-                : monitors.length > 6
-                  ? routes.monitors
-                  : undefined
-            }
-          />
-        </Suspense>
-      )}
-    </>
-  );
-}
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="grid min-w-0 gap-4">
+            {columns.full.map(renderWidget)}
+          </div>
 
-function DeskStat({
-  label,
-  value,
-  suffix,
-  tone,
-  delay,
-  onClick,
-}: {
-  label: string;
-  value: number | string;
-  suffix?: string;
-  tone: "up" | "down" | "run" | "muted";
-  delay: number;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className={cn(
-        "animate-rise bg-card px-5 py-5 text-left transition-colors hover:bg-background",
-        "focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+          {monitors.length === 0 && !editing ? (
+            <EmptyState
+              title="No monitors in the fleet"
+              action={
+                <Button asChild size="lg">
+                  <Link href={routes.monitorNew}>Add HTTP monitor</Link>
+                </Button>
+              }
+            >
+              Start with a GET against an endpoint that must stay up. The fleet
+              map and widgets fill in after the first check.
+            </EmptyState>
+          ) : (
+            <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:gap-5">
+              <div className="grid min-w-0 flex-1 gap-4">
+                {columns.main.length > 0
+                  ? columns.main.map(renderWidget)
+                  : editing ? (
+                      <div className="border border-dashed border-border px-4 py-8 text-center text-[13px] text-muted-foreground">
+                        Main column is empty — move a widget here or add one.
+                      </div>
+                    ) : null}
+              </div>
+              <aside className="grid w-full min-w-0 shrink-0 gap-4 lg:w-[280px]">
+                {columns.side.length > 0
+                  ? columns.side.map(renderWidget)
+                  : editing ? (
+                      <div className="border border-dashed border-border px-4 py-8 text-center text-[13px] text-muted-foreground">
+                        Side column is empty — move a widget here or add one.
+                      </div>
+                    ) : null}
+              </aside>
+            </div>
+          )}
+        </div>
       )}
-      style={{ animationDelay: `${delay * 60}ms` }}
-      onClick={onClick}
-    >
-      <span className="block text-[13px] text-muted-foreground">{label}</span>
-      <b
-        className={cn(
-          "mt-2 block font-heading text-[clamp(32px,3.5vw,42px)] font-black leading-none tracking-[-0.05em] tabular-nums",
-          tone === "up" && "text-up",
-          tone === "down" && "text-down",
-          tone === "run" && "text-run",
-          tone === "muted" && "text-foreground",
-        )}
-      >
-        {value}
-        {suffix ? (
-          <span className="text-[20px] font-medium text-muted-foreground">
-            {suffix}
-          </span>
-        ) : null}
-      </b>
-    </button>
+
+      <AddWidgetDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        layout={layout}
+        onAdd={(type) => {
+          addWidget(type);
+          toast.success("Widget added.");
+          if (!editing) setEditing(true);
+        }}
+      />
+      <RenameWidgetDialog
+        widget={renameTarget}
+        open={Boolean(renameTarget)}
+        onOpenChange={(open) => {
+          if (!open) setRenameTarget(null);
+        }}
+        onSave={(title) => {
+          if (!renameTarget) return;
+          renameWidget(renameTarget.id, title);
+          toast.success("Widget renamed.");
+        }}
+      />
+    </>
   );
 }

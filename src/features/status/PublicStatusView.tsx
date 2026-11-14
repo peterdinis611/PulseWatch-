@@ -51,10 +51,10 @@ function overallTone(status: string, monitors: PublicStatusMonitor[]): Tone {
 }
 
 const HEADLINE: Record<Tone, [string, string]> = {
-  up: ["Všetko beží.", "Všetky systémy fungujú normálne."],
-  warn: ["Čiastočné problémy.", "Niektoré služby majú zhoršený výkon."],
-  down: ["Výpadok.", "Aspoň jedna služba momentálne nefunguje."],
-  idle: ["Zbieram dáta.", "Prvé kontroly ešte prebiehajú."],
+  up: ["All systems operational.", "Everything is running normally."],
+  warn: ["Partial disruption.", "Some services are experiencing degraded performance."],
+  down: ["Service outage.", "At least one service is currently unavailable."],
+  idle: ["Collecting data.", "The first checks are still running."],
 };
 
 function monitorTone(status: MonitorStatus): Tone {
@@ -62,9 +62,9 @@ function monitorTone(status: MonitorStatus): Tone {
 }
 
 const STATUS_LABEL: Record<MonitorStatus, string> = {
-  UP: "Funguje",
-  DOWN: "Výpadok",
-  UNKNOWN: "Čaká",
+  UP: "Operational",
+  DOWN: "Down",
+  UNKNOWN: "Pending",
 };
 
 function groupMonitors(monitors: PublicStatusMonitor[]) {
@@ -104,7 +104,7 @@ export function PublicStatusView({ slug }: { slug: string }) {
         <TopBar updatedAt={data?.updatedAt} />
         {loading && !data ? (
           <p className="mt-24 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
-            Načítavam stav…
+            Loading status…
           </p>
         ) : error && !data ? (
           <Unavailable message={gqlMessage(error)} />
@@ -112,9 +112,9 @@ export function PublicStatusView({ slug }: { slug: string }) {
           <StatusBody page={data} />
         ) : null}
         <footer className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-          <span>Obnova každých 30 s</span>
+          <span>Refreshes every 30 s</span>
           <span>
-            Poháňa <span className="text-foreground">PulseWatch</span>
+            Powered by <span className="text-foreground">PulseWatch</span>
           </span>
         </footer>
       </main>
@@ -130,7 +130,7 @@ function TopBar({ updatedAt }: { updatedAt?: string }) {
         PulseWatch / Status
       </span>
       <span title={updatedAt ? formatWhen(updatedAt) : undefined}>
-        {updatedAt ? `Aktualizované ${formatAgo(updatedAt)}` : "—"}
+        {updatedAt ? `Updated ${formatAgo(updatedAt)}` : "—"}
       </span>
     </div>
   );
@@ -140,10 +140,10 @@ function Unavailable({ message }: { message: string }) {
   return (
     <section className="animate-rise mt-20 max-w-xl border-l-4 border-down pl-5">
       <h1 className="font-heading text-[clamp(36px,6vw,64px)] font-black tracking-[-0.05em]">
-        Stránka nie je dostupná.
+        This page is not available.
       </h1>
       <p className="mt-3 text-[15px] text-muted-foreground">
-        Status stránka neexistuje alebo nie je verejná.
+        This status page doesn't exist or isn't public.
       </p>
       <p className="mt-4 font-mono text-[12px] text-muted-foreground">{message}</p>
     </section>
@@ -201,9 +201,9 @@ function StatusBody({ page }: { page: PublicStatusPage }) {
         </div>
 
         <dl className="mt-8 grid grid-cols-3 border-t border-border pt-5 font-mono">
-          <Stat label="Funguje" value={`${upCount}/${page.monitors.length}`} />
+          <Stat label="Operational" value={`${upCount}/${page.monitors.length}`} />
           <Stat
-            label="Výpadky"
+            label="Down"
             value={String(downCount)}
             tone={downCount > 0 ? "text-down" : undefined}
           />
@@ -216,7 +216,7 @@ function StatusBody({ page }: { page: PublicStatusPage }) {
 
       {page.monitors.length === 0 ? (
         <p className="mt-10 text-[15px] text-muted-foreground">
-          Na tejto stránke zatiaľ nie sú žiadne služby.
+          No services are listed on this page yet.
         </p>
       ) : (
         <div className="mt-10 grid gap-9">
@@ -228,7 +228,7 @@ function StatusBody({ page }: { page: PublicStatusPage }) {
             >
               <header className="flex items-baseline justify-between border-b-2 border-foreground pb-2">
                 <h2 className="font-heading text-[20px] font-black tracking-[-0.04em]">
-                  {name || "Služby"}
+                  {name || "Services"}
                 </h2>
                 <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                   {monitors.length}
@@ -281,7 +281,7 @@ function UptimeGauge({ pct, tone }: { pct: number | null; tone: Tone }) {
     <div
       className="flex h-5 gap-[2px]"
       role="img"
-      aria-label={pct == null ? "Bez dát" : `Uptime ${pct.toFixed(2)} %`}
+      aria-label={pct == null ? "No data" : `Uptime ${pct.toFixed(2)} %`}
     >
       {Array.from({ length: CELLS }, (_, i) => (
         <span
@@ -325,7 +325,7 @@ function MonitorRow({ monitor }: { monitor: PublicStatusMonitor }) {
         )}
         title={
           monitor.lastCheckedAt
-            ? `Posledná kontrola ${formatAgo(monitor.lastCheckedAt)}`
+            ? `Last checked ${formatAgo(monitor.lastCheckedAt)}`
             : undefined
         }
       >

@@ -42,7 +42,7 @@ export function DataTable<T extends RowData>({
   getRowHref,
   getRowId,
   highlightRowId,
-  emptyMessage = "Žiadne záznamy.",
+  emptyMessage = "No records.",
   emptyAction,
   rowClassName,
   animateRows = false,

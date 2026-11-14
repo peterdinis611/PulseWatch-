@@ -222,8 +222,10 @@ export const DESK_QUERY = `
     incidents(status: OPEN) {
       id
       monitorId
+      monitorName
       title
       status
+      lastError
       openedAt
     }
     myStatusPage {

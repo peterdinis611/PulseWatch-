@@ -15,9 +15,9 @@ describe("Constellation", () => {
     render(<Constellation monitors={[]} />);
 
     expect(
-      screen.getByRole("img", { name: /stav monitorov v konštelácii/i }),
+      screen.getByRole("img", { name: /monitor status constellation/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText("žiadny monitor")).toBeInTheDocument();
+    expect(screen.getByText("no monitors")).toBeInTheDocument();
   });
 
   it("labels monitor nodes and navigates on click", async () => {

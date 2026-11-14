@@ -69,24 +69,24 @@ export default function SettingsPage() {
     const interval = Number(intervalSec);
     const timeout = Number(timeoutMs);
     if (!Number.isFinite(interval) || interval < INTERVAL_MIN || interval > INTERVAL_MAX) {
-      return `Interval musí byť ${INTERVAL_MIN}–${INTERVAL_MAX} s.`;
+      return `Interval must be between ${INTERVAL_MIN} and ${INTERVAL_MAX} s.`;
     }
     if (!Number.isFinite(timeout) || timeout < TIMEOUT_MIN || timeout > TIMEOUT_MAX) {
-      return `Timeout musí byť ${TIMEOUT_MIN}–${TIMEOUT_MAX} ms.`;
+      return `Timeout must be between ${TIMEOUT_MIN} and ${TIMEOUT_MAX} ms.`;
     }
     if (alertEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(alertEmail.trim())) {
-      return "E-mail pre alerty nevyzerá platne.";
+      return "Alert email address is not valid.";
     }
     if (webhookUrl.trim() && !isHttpUrl(webhookUrl.trim())) {
-      return "Webhook URL musí začínať http:// alebo https://.";
+      return "Webhook URL must start with http:// or https://.";
     }
     if (slackWebhookUrl.trim() && !isHttpUrl(slackWebhookUrl.trim())) {
-      return "Slack webhook musí začínať http:// alebo https://.";
+      return "Slack webhook must start with http:// or https://.";
     }
     if (maintenanceUntil.trim()) {
       const date = new Date(maintenanceUntil);
       if (Number.isNaN(date.getTime())) {
-        return "Maintenance čas nie je platný.";
+        return "Maintenance end time is not valid.";
       }
     }
     return null;
@@ -135,7 +135,7 @@ export default function SettingsPage() {
     event.preventDefault();
     if (validationError) {
       setError(validationError);
-      toast.error("Skontroluj hodnoty.", { description: validationError });
+      toast.error("Check your values.", { description: validationError });
       return;
     }
     setBusy(true);
@@ -158,11 +158,11 @@ export default function SettingsPage() {
         },
       );
       applySettings(data.updateMonitorSettings);
-      toast.success("Nastavenia uložené.");
+      toast.success("Settings saved.");
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);
-      toast.error("Uloženie zlyhalo.", { description: message });
+      toast.error("Couldn't save settings.", { description: message });
     } finally {
       setBusy(false);
     }
@@ -171,13 +171,13 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader
-        title="Defaulty floty"
-        lede="Čo zdedia nové monitory a kam idú alerty. Per-monitor mute ostáva v detaile."
+        title="Settings"
+        lede="Fleet defaults for new monitors, alert delivery, and the public status page."
         actions={
           settings ? (
             <p className="text-[13px] text-muted-foreground">
-              Naposledy{" "}
-              {new Date(settings.updatedAt).toLocaleString("sk-SK")}
+              Last updated{" "}
+              {new Date(settings.updatedAt).toLocaleString("en-GB")}
             </p>
           ) : null
         }
@@ -185,11 +185,11 @@ export default function SettingsPage() {
 
       {(fleetAlertsMuted || maintenanceActive) && (
         <div className="mb-6 border border-warn/40 bg-card px-4 py-3 text-[14px]">
-          <p className="font-medium text-warn">Flota je v údržbe</p>
+          <p className="font-medium text-warn">Fleet is in maintenance</p>
           <p className="mt-1 text-muted-foreground">
-            {fleetAlertsMuted ? "Všetky alerty sú stíšené. " : null}
+            {fleetAlertsMuted ? "All alerts are muted. " : null}
             {maintenanceActive
-              ? `Maintenance do ${new Date(maintenanceUntil).toLocaleString("sk-SK")}.`
+              ? `Maintenance until ${new Date(maintenanceUntil).toLocaleString("en-GB")}.`
               : null}
           </p>
         </div>
@@ -200,8 +200,8 @@ export default function SettingsPage() {
           <FormError>{error ?? (!loaded ? null : validationError && dirty ? validationError : null)}</FormError>
 
           <SettingsSection
-            title="Kontroly"
-            lede="Default interval a timeout pre nové monitory. Existujúce hodnoty nemení."
+            title="Checks"
+            lede="Default interval and timeout for new monitors. Existing monitors are not changed."
           >
             <FormRow>
               <FormField
@@ -236,39 +236,39 @@ export default function SettingsPage() {
           </SettingsSection>
 
           <SettingsSection
-            title="Upozornenia"
-            lede="Čo flota hlási. Rovnaký alert sa neopakuje častejšie ako raz za 5 minút."
+            title="Notifications"
+            lede="What your fleet reports. The same alert is not repeated more than once every 5 minutes."
           >
             <CheckRow
               checked={notifyOnDown}
               onCheckedChange={setNotifyOnDown}
-              description="Keď monitor prejde na DOWN."
+              description="When a monitor goes DOWN."
             >
-              Pri DOWN
+              On DOWN
             </CheckRow>
             <CheckRow
               checked={notifyOnRecover}
               onCheckedChange={setNotifyOnRecover}
-              description="Keď sa stav vráti na UP."
+              description="When a monitor returns to UP."
             >
-              Pri recovery
+              On recovery
             </CheckRow>
           </SettingsSection>
 
           <SettingsSection
-            title="Údržba"
-            lede="Dočasne stíšiť flotu počas deployu. Banner uvidíš aj na monitormch."
+            title="Maintenance"
+            lede="Temporarily mute the fleet during a deploy. The banner also appears on the Monitors page."
           >
             <CheckRow
               checked={fleetAlertsMuted}
               onCheckedChange={setFleetAlertsMuted}
-              description="Vypne všetky alerty floty, kým to nezrušíš."
+              description="Silences all fleet alerts until you turn this off."
             >
-              Stíšiť všetky alerty
+              Mute all alerts
             </CheckRow>
             <FormField
-              label="Maintenance do"
-              hint="Lokálny čas. Prázdne = žiadne okno."
+              label="Maintenance until"
+              hint="Local time. Leave empty for no maintenance window."
             >
               <div className="flex flex-wrap gap-2">
                 <Input
@@ -285,7 +285,7 @@ export default function SettingsPage() {
                     className="h-10"
                     onClick={() => setMaintenanceUntil("")}
                   >
-                    Vymazať
+                    Clear
                   </Button>
                 ) : null}
               </div>
@@ -293,12 +293,12 @@ export default function SettingsPage() {
           </SettingsSection>
 
           <SettingsSection
-            title="Kanály"
-            lede="Kam posielať alerty. E-mail potrebuje SMTP v backend .env."
+            title="Channels"
+            lede="Where to send alerts. Email requires SMTP in the backend .env."
           >
             <FormField
               label="Webhook URL"
-              hint="JSON POST s event, title, body."
+              hint="JSON POST with event, title, body."
             >
               <Input
                 value={webhookUrl}
@@ -315,7 +315,7 @@ export default function SettingsPage() {
                 className="h-10"
               />
             </FormField>
-            <FormField label="E-mail pre alerty">
+            <FormField label="Alert email">
               <Input
                 type="email"
                 value={alertEmail}
@@ -332,7 +332,7 @@ export default function SettingsPage() {
               type="submit"
               size="lg"
             >
-              {busy ? "Ukladám…" : dirty ? "Uložiť zmeny" : "Bez zmien"}
+              {busy ? "Saving…" : dirty ? "Save changes" : "No changes"}
             </Button>
             {dirty && !busy ? (
               <Button
@@ -341,7 +341,7 @@ export default function SettingsPage() {
                 size="lg"
                 onClick={() => settings && applySettings(settings)}
               >
-                Zahodiť
+                Discard
               </Button>
             ) : null}
           </div>
@@ -349,7 +349,7 @@ export default function SettingsPage() {
 
         <aside className="h-fit border border-border bg-card p-5 text-[14px] text-muted-foreground lg:sticky lg:top-24">
           <p className="font-heading text-[15px] font-black tracking-[-0.03em] text-foreground">
-            Rýchle odkazy
+            Quick links
           </p>
           <ul className="mt-4 space-y-3">
             <li>
@@ -357,10 +357,10 @@ export default function SettingsPage() {
                 href={routes.monitors}
                 className="text-foreground underline-offset-4 hover:underline"
               >
-                Monitory →
+                Monitors →
               </Link>
               <p className="mt-1 text-[13px]">
-                Per-monitor mute a pause v riadku alebo detaile.
+                Per-monitor mute and pause from the row or detail page.
               </p>
             </li>
             <li>
@@ -368,10 +368,10 @@ export default function SettingsPage() {
                 href={routes.alerts}
                 className="text-foreground underline-offset-4 hover:underline"
               >
-                Alerty →
+                Alerts →
               </Link>
               <p className="mt-1 text-[13px]">
-                Incidenty a história upozornení.
+                Incidents and notification history.
               </p>
             </li>
             <li>
@@ -379,16 +379,16 @@ export default function SettingsPage() {
                 href="#status-page"
                 className="text-foreground underline-offset-4 hover:underline"
               >
-                Status stránka →
+                Status page →
               </a>
               <p className="mt-1 text-[13px]">
-                Verejný prehľad floty bez loginu.
+                Public fleet overview, no login required.
               </p>
             </li>
             <li>
               <p className="text-foreground">Anti-flap</p>
               <p className="mt-1 text-[13px]">
-                Rovnaký alert max raz za 5 minút.
+                The same alert fires at most once every 5 minutes.
               </p>
             </li>
           </ul>

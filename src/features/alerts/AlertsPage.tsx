@@ -38,16 +38,15 @@ export default function AlertsPage() {
   return (
     <>
       <PageHeader
-        kicker="Incidenty"
-        title="Čo práve horí."
-        lede="Incidenty sa otvoria pri páde monitora a zatvoria pri recovery. Notifikácie ostávajú v druhej záložke."
+        title="Alerts"
+        lede="Open incidents and the notification feed. Incidents open on DOWN and resolve on recovery."
       />
 
       <div role="tablist" className="mb-4 flex gap-5 border-b border-border">
         {(
           [
-            ["incidents", "Incidenty"],
-            ["notifications", "Notifikácie"],
+            ["incidents", "Incidents"],
+            ["notifications", "Notifications"],
           ] as const
         ).map(([value, label]) => (
           <button
@@ -76,7 +75,7 @@ export default function AlertsPage() {
           className={`${monoClass} text-muted-foreground underline-offset-4 hover:text-foreground hover:underline`}
           onClick={() => router.push("/overview")}
         >
-          ← Späť na prehľad
+          ← Back to overview
         </button>
       </p>
     </>
@@ -134,7 +133,7 @@ function NotificationsPanel() {
       );
       await refresh();
     } catch (err) {
-      toast.error("Označenie zlyhalo.", { description: gqlMessage(err) });
+      toast.error("Couldn't mark as read.", { description: gqlMessage(err) });
     }
   }
 
@@ -148,9 +147,9 @@ function NotificationsPanel() {
         })),
       );
       await refresh();
-      toast.success("Všetky prečítané.");
+      toast.success("All marked as read.");
     } catch (err) {
-      toast.error("Označenie zlyhalo.", { description: gqlMessage(err) });
+      toast.error("Couldn't mark as read.", { description: gqlMessage(err) });
     }
   }
 
@@ -174,13 +173,13 @@ function NotificationsPanel() {
                     : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
-                {value === "all" ? "Všetky" : "Neprečítané"}
+                {value === "all" ? "All" : "Unread"}
               </button>
             ))}
           </div>
           <div className="flex items-center gap-3">
             <p className={monoClass}>
-              {visible.length} záznamov · {unread} neprečítaných
+              {visible.length} {visible.length === 1 ? "entry" : "entries"} · {unread} unread
             </p>
             <Button
               type="button"
@@ -189,7 +188,7 @@ function NotificationsPanel() {
               disabled={unread === 0}
               onClick={markAll}
             >
-              Označiť prečítané
+              Mark all as read
             </Button>
           </div>
         </div>
@@ -200,15 +199,15 @@ function NotificationsPanel() {
 
         {!loaded ? (
           <p className="px-5 py-10 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Načítavam…
+            Loading…
           </p>
         ) : visible.length === 0 ? (
           <div className="px-5 py-14">
-            <p className="font-heading text-3xl tracking-[-0.05em]">Ticho.</p>
+            <p className="font-heading text-3xl tracking-[-0.05em]">All quiet.</p>
             <p className="mt-2 text-sm text-muted-foreground">
               {filter === "unread"
-                ? "Všetko prečítané."
-                : "Keď niečo spadne alebo k6 dopíše beh, uvidíš to tu."}
+                ? "Everything is read."
+                : "When something goes down or a k6 run finishes, it will show up here."}
             </p>
           </div>
         ) : (
@@ -228,14 +227,14 @@ function NotificationsPanel() {
                       {item.title}
                     </p>
                     <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                      {item.readAt ? "PREČÍTANÉ" : "NOVÉ"}
+                      {item.readAt ? "READ" : "NEW"}
                     </span>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
                   <p className="mt-2 font-mono text-[10px] text-muted-foreground">
                     {formatAgo(item.createdAt)}
                     {item.incidentId ? " · incident" : ""}
-                    {href ? " · detail →" : ""}
+                    {href ? " · details →" : ""}
                   </p>
                 </div>
               </>

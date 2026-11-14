@@ -13,7 +13,7 @@ export function gqlMessage(err: unknown): string {
     if (first) return first;
   }
   if (err instanceof Error && err.message) return err.message;
-  return "Požiadavka zlyhala.";
+  return "Request failed.";
 }
 
 function isUnauthorized(err: unknown): boolean {

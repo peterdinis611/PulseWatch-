@@ -7,94 +7,94 @@ import { LivePulse } from "@/features/marketing/LivePulse";
 import { Button } from "@/components/ui/button";
 
 const NAV = [
-  { href: "#ako", label: "Ako to ide" },
-  { href: "#typy", label: "Čo sleduje" },
-  { href: "#zataz", label: "Záťaž" },
-  { href: "#otazky", label: "Otázky" },
+  { href: "#how", label: "How it works" },
+  { href: "#types", label: "What it monitors" },
+  { href: "#load", label: "Load" },
+  { href: "#faq", label: "FAQ" },
 ];
 
 const TYPES = [
   {
     type: "HTTP",
-    title: "Webová adresa",
-    body: "Pingne URL. Vieš nastaviť GET/POST a očakávaný status, napríklad 200.",
+    title: "Web URL",
+    body: "Pings a URL. Configure GET or POST and the expected status, such as 200.",
   },
   {
     type: "REDIS",
     title: "Redis cache",
-    body: "Skúsi sa pripojiť na redis://. Keď cache mlčí, uvidíš DOWN.",
+    body: "Connects to redis://. When the cache goes quiet, you see DOWN.",
   },
   {
     type: "DATABASE",
-    title: "Databáza",
-    body: "Postgres, MySQL alebo SQLite cez connection URL. Bez odpovede = alarm.",
+    title: "Database",
+    body: "Postgres, MySQL, or SQLite via connection URL. No response means an alert.",
   },
   {
     type: "TCP",
-    title: "Otvorený port",
-    body: "Overí, či host počúva na porte. Hodí sa na interné služby bez HTTP.",
+    title: "Open port",
+    body: "Checks whether a host is listening on a port. Great for internal services without HTTP.",
   },
   {
     type: "SSL",
-    title: "Certifikát",
-    body: "Kontroluje, či TLS ešte platí a koľko dní ostáva do expirácie.",
+    title: "Certificate",
+    body: "Verifies that TLS is still valid and how many days remain until expiry.",
   },
   {
     type: "DNS",
-    title: "DNS záznam",
-    body: "A, AAAA, CNAME, MX, NS, TXT. Vie porovnať očakávanú hodnotu.",
+    title: "DNS record",
+    body: "A, AAAA, CNAME, MX, NS, TXT. Can compare against an expected value.",
   },
   {
     type: "SMTP",
     title: "Mail server",
-    body: "STARTTLS alebo implicitné TLS. Vieš, či pošta ešte prijíma spojenie.",
+    body: "STARTTLS or implicit TLS. Know whether your mail server still accepts connections.",
   },
   {
     type: "KAFKA",
     title: "Kafka broker",
-    body: "Broker a voliteľne topic. TLS podľa potreby.",
+    body: "Broker and, optionally, a topic. TLS as needed.",
   },
   {
     type: "GRPC",
     title: "gRPC health",
-    body: "Standard health check na službu. Vhodné pre interné API.",
+    body: "Standard health check for a service. Ideal for internal APIs.",
   },
 ];
 
 const STEPS = [
   {
-    call: "Pomenuj, čo má žiť",
+    call: "Name what must stay alive",
     response:
-      "Pridáš monitor: URL webu, Redis, databázu, port alebo certifikát. Interval nechaj na default — 60 sekúnd stačí.",
+      "Add a monitor: a website URL, Redis, a database, a port, or a certificate. Leave the interval at the default — 60 seconds is enough.",
   },
   {
-    call: "PulseWatch to kontroluje",
+    call: "PulseWatch checks it",
     response:
-      "Na pozadí sa pýta cieľa. Stav vidíš ako bod v konštelácii a v zozname: HORE, DOLE, alebo ešte neznámy.",
+      "It queries your target in the background. You see the status as a dot in the constellation and in the list: UP, DOWN, or UNKNOWN.",
   },
   {
-    call: "Keď spadne, vieš to",
+    call: "When it fails, you know",
     response:
-      "Príde upozornenie. Môžeš spustiť kontrolu ručne. Ak chceš vedieť, ako služba zvládne tlačenku, spustíš k6 scenár.",
+      "You get an alert. You can run a check manually. To see how a service handles pressure, run a k6 scenario.",
   },
 ];
 
 const FAQS = [
   {
-    q: "Čo PulseWatch robí?",
-    a: "Pravidelne overuje, či tvoje služby odpovedajú. Keď prestanú, dostaneš upozornenie. Okrem toho vieš spustiť k6 záťažový test na HTTP endpoint.",
+    q: "What does PulseWatch do?",
+    a: "It regularly checks that your services respond. When they stop, you get an alert. You can also run a k6 load test against an HTTP endpoint.",
   },
   {
-    q: "Aké služby viem sledovať?",
-    a: "Deväť typov: HTTP, Redis, databáza, TCP port, SSL certifikát, DNS, SMTP, Kafka a gRPC. Záťaž (k6) nie je monitor — je to samostatný test na požiadanie.",
+    q: "What can I monitor?",
+    a: "Nine types: HTTP, Redis, database, TCP port, SSL certificate, DNS, SMTP, Kafka, and gRPC. Load (k6) is not a monitor — it's a separate on-demand test.",
   },
   {
-    q: "Čo je záťažový test?",
-    a: "Scenár pre k6: URL, metóda, počet virtuálnych používateľov (1–50) a dĺžka (5–120 s). Výsledok uvidíš ako p95 latenciu a fail rate. k6 musí bežať na stroji s API.",
+    q: "What is a load test?",
+    a: "A k6 scenario: URL, method, number of virtual users (1–50), and duration (5–120 s). Results show up as p95 latency and fail rate. k6 must be running on the machine hosting the API.",
   },
   {
-    q: "Potrebujem účet?",
-    a: "Áno. Registrácia je zadarmo. Po prihlásení pridáš prvý monitor a prehľad ukáže, čo je hore.",
+    q: "Do I need an account?",
+    a: "Yes. Sign-up is free. After you sign in, add your first monitor and Overview shows what's up.",
   },
 ];
 
@@ -103,10 +103,10 @@ export function LandingPage() {
     <div className="relative z-2">
       <SignedInRedirect />
       <a
-        href="#obsah"
+        href="#content"
         className="absolute top-[-48px] left-3 z-20 rounded-md bg-primary px-3 py-2 text-primary-foreground focus:top-3"
       >
-        Preskočiť na obsah
+        Skip to content
       </a>
       <header className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-4 px-5 pt-6 md:px-10">
         <Link
@@ -117,7 +117,7 @@ export function LandingPage() {
         </Link>
         <nav
           className="hidden items-center gap-5 md:flex"
-          aria-label="Obsah stránky"
+          aria-label="Page sections"
         >
           {NAV.map((item) => (
             <a
@@ -129,21 +129,21 @@ export function LandingPage() {
             </a>
           ))}
           <a
-            href="#vstup"
+            href="#get-started"
             className="text-[14px] font-medium text-foreground underline-offset-4 hover:underline"
           >
-            Vstúpiť
+            Get started
           </a>
         </nav>
         <a
-          href="#vstup"
+          href="#get-started"
           className="text-[14px] font-medium text-foreground md:hidden"
         >
-          Vstúpiť
+          Get started
         </a>
       </header>
 
-      <main id="obsah">
+      <main id="content">
         <section className="relative grid min-h-[100svh] grid-rows-[1fr_auto] gap-10 overflow-hidden px-5 pb-10 pt-24 md:px-10 md:pt-28">
           <div
             aria-hidden
@@ -155,21 +155,21 @@ export function LandingPage() {
               <span className="whitespace-nowrap">PulseWatch.</span>
             </span>
             <span className="mask-line mt-1">
-              <span className="whitespace-nowrap">Vieš, čo je hore.</span>
+              <span className="whitespace-nowrap">Know what&apos;s up.</span>
             </span>
             <span className="mask-line mt-1 text-primary">
-              <span className="whitespace-nowrap">Skôr, ako to padne.</span>
+              <span className="whitespace-nowrap">Before it goes down.</span>
             </span>
           </h1>
           <div className="relative z-[1] flex flex-col gap-8 border-t border-border pt-8 sm:flex-row sm:items-end sm:justify-between">
             <p className="animate-rise max-w-[40ch] text-[clamp(16px,1.6vw,20px)] leading-snug text-muted-foreground [animation-delay:240ms]">
-              Prehľad pre ľudí, ktorí prevádzkujú weby a API. Pridáš cieľ, on
-              ho pravidelne skontroluje. Keď neodpovie, uvidíš to tu — nie až
-              v tikete od zákazníka.
+              An overview for people who run websites and APIs. Add a target
+              and it checks it on a schedule. When it stops responding, you
+              see it here — not in a customer ticket.
             </p>
             <div className="animate-rise flex shrink-0 flex-wrap gap-3 [animation-delay:240ms]">
               <Button asChild size="lg" className="h-11 rounded-md px-5">
-                <a href="#vstup">Vytvoriť účet</a>
+                <a href="#get-started">Create account</a>
               </Button>
               <Button
                 asChild
@@ -177,36 +177,36 @@ export function LandingPage() {
                 size="lg"
                 className="h-11 rounded-md px-5"
               >
-                <a href="#ako">Ako to funguje</a>
+                <a href="#how">How it works</a>
               </Button>
             </div>
           </div>
         </section>
 
         <section
-          aria-label="Živý stav API"
+          aria-label="Live API status"
           className="border-t border-border px-5 py-10 md:px-10"
         >
           <LivePulse />
           <p className="mt-4 max-w-[40ch] text-[15px] text-muted-foreground">
-            Čísla sú živý stav tohto API. Rovnaký princíp potom uvidíš pri
-            svojich monitoroch.
+            These numbers are the live status of this API. You&apos;ll see the
+            same thing for your own monitors.
           </p>
         </section>
 
         <section className="border-t border-border px-5 py-10 md:px-10">
           <LandingConstellation />
           <p className="mt-3 text-[14px] text-muted-foreground">
-            Každý bod je iný typ kontroly · zelená hore · červená dole
+            Each dot is a different check type · green is UP · red is DOWN
           </p>
         </section>
 
         <section
-          id="ako"
+          id="how"
           className="scroll-mt-16 border-t border-border px-5 py-20 md:px-10"
         >
           <h2 className="max-w-[14ch] font-heading text-[clamp(32px,5vw,56px)] font-black tracking-[-0.05em]">
-            Od URL po upozornenie
+            From URL to alert
           </h2>
           <ol className="mx-auto mt-14 max-w-[560px] space-y-14 md:mx-0 md:ml-[min(12vw,8rem)]">
             {STEPS.map((step) => (
@@ -223,17 +223,17 @@ export function LandingPage() {
         </section>
 
         <section
-          id="typy"
+          id="types"
           className="scroll-mt-16 border-t border-border px-5 py-20 md:px-10"
         >
           <h2 className="font-heading text-[clamp(40px,6vw,72px)] font-black tracking-[-0.05em]">
-            Nie len ping
+            Not just a ping
             <br />
-            na homepage.
+            to your homepage.
           </h2>
           <p className="mt-6 max-w-[36ch] text-[18px] text-muted-foreground md:ml-auto">
-            Jeden nástroj na web, cache, databázu, certifikát aj frontu. Vyberieš
-            typ, vyplníš cieľ, ostane v konštelácii.
+            One tool for your website, cache, database, certificate, and queue.
+            Pick a type, enter a target, and it joins the constellation.
           </p>
           <ul className="mt-14">
             {TYPES.map((item) => (
@@ -254,16 +254,16 @@ export function LandingPage() {
         </section>
 
         <section
-          id="zataz"
+          id="load"
           className="scroll-mt-16 border-t border-border bg-primary px-5 py-20 text-primary-foreground md:px-10"
         >
           <h2 className="max-w-[16ch] font-heading text-[clamp(36px,6vw,72px)] font-black tracking-[-0.05em]">
-            Nestačí, že to žije. Zvládne to tlak?
+            Being up isn&apos;t enough. Can it handle the pressure?
           </h2>
           <p className="mt-6 max-w-[44ch] text-[18px] text-primary-foreground/75">
-            k6 nie je ďalší monitor. Je to test, ktorý spustíš, keď chceš vedieť
-            p95 a fail rate. Beh sa vráti hneď ako RUNNING; keď k6 dopíše
-            summary, uvidíš čísla.
+            k6 isn&apos;t another monitor. It&apos;s a test you run when you
+            want p95 and fail rate. The run returns immediately as RUNNING;
+            once k6 writes its summary, you see the numbers.
           </p>
           <dl className="mt-12 grid max-w-2xl gap-8 sm:grid-cols-3">
             <div>
@@ -273,14 +273,14 @@ export function LandingPage() {
               </dd>
             </div>
             <div>
-              <dt className="text-[13px] text-primary-foreground/65">Trvanie</dt>
+              <dt className="text-[13px] text-primary-foreground/65">Duration</dt>
               <dd className="mt-1 font-heading text-[32px] font-black tracking-[-0.04em]">
                 5–120 s
               </dd>
             </div>
             <div>
               <dt className="text-[13px] text-primary-foreground/65">
-                Výsledok
+                Result
               </dt>
               <dd className="mt-1 font-heading text-[32px] font-black tracking-[-0.04em]">
                 p95 · fail
@@ -293,11 +293,12 @@ export function LandingPage() {
           <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div>
               <h2 className="font-heading text-[clamp(32px,5vw,52px)] font-black tracking-[-0.05em]">
-                Flota ti napíše, keď je ticho zlé
+                Your fleet tells you when silence is bad
               </h2>
               <p className="mt-5 max-w-[40ch] text-[17px] text-muted-foreground">
-                DOWN, recovery, koniec k6 behu. Neprečítané majú pruh. V
-                nastaveniach vieš vypnúť recovery, ak ťa zaujíma len pád.
+                DOWN, recovery, end of a k6 run. Unread alerts are highlighted
+                with a stripe. In Settings you can turn off recovery
+                notifications if you only care about outages.
               </p>
             </div>
             <aside
@@ -306,14 +307,14 @@ export function LandingPage() {
             >
               <p className="text-[13px] font-medium text-down">ALERT</p>
               <p className="mt-3 font-heading text-[24px] font-black tracking-[-0.04em]">
-                Databáza orders je DOWN
+                Database orders is DOWN
               </p>
               <p className="mt-2 text-[16px] text-muted-foreground">
-                Posledný check neodpovedal v timeout. Otvor monitor a spusti
-                kontrolu znova, alebo pozeraj históriu.
+                The last check timed out without a response. Open the monitor
+                and run Check now, or browse the history.
               </p>
               <p className="mt-4 text-[13px] text-muted-foreground">
-                pred 12 s · NEW
+                12 s ago · NEW
               </p>
             </aside>
           </div>
@@ -328,15 +329,15 @@ export function LandingPage() {
             id="cta-heading"
             className="max-w-[16ch] font-heading text-[clamp(40px,7vw,84px)] font-black tracking-[-0.055em]"
           >
-            Prvý monitor za jednu minútu
+            Your first monitor in one minute
           </h2>
           <p className="mt-6 max-w-[38ch] text-[18px] text-muted-foreground">
-            Účet je zadarmo. Pridáš HTTP GET na službu, ktorá má zostať nažive.
-            Keď spadne, uvidíš to skôr ako ticket.
+            The account is free. Add an HTTP GET for a service that has to stay
+            up. When it fails, you&apos;ll know before the ticket arrives.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="h-11 rounded-md px-5">
-              <a href="#vstup">Vytvoriť účet</a>
+              <a href="#get-started">Create account</a>
             </Button>
             <Button
               asChild
@@ -344,19 +345,19 @@ export function LandingPage() {
               variant="outline"
               className="h-11 rounded-md px-5"
             >
-              <Link href="/login">Už mám účet</Link>
+              <Link href="/login">I already have an account</Link>
             </Button>
           </div>
         </section>
 
         <section
-          id="otazky"
+          id="faq"
           className="scroll-mt-16 border-t border-border px-5 py-20 md:px-10"
         >
           <div className="space-y-16">
             <div className="grid gap-4 md:grid-cols-2 md:gap-10">
               <h2 className="font-heading text-[clamp(26px,2.6vw,40px)] font-medium tracking-[-0.03em] text-muted-foreground">
-                Otázky
+                FAQ
               </h2>
               <div aria-hidden />
             </div>
@@ -377,17 +378,17 @@ export function LandingPage() {
         </section>
 
         <section
-          id="vstup"
+          id="get-started"
           className="scroll-mt-16 border-t border-border px-5 py-20 md:px-10"
         >
           <div className="grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="lg:sticky lg:top-24">
               <h2 className="font-heading text-[clamp(36px,5vw,64px)] font-black tracking-[-0.05em]">
-                Pridaj prvý cieľ ešte dnes
+                Add your first target today
               </h2>
               <p className="mt-5 max-w-[34ch] text-[18px] text-muted-foreground">
-                Email a heslo. Potom HTTP GET na endpoint, ktorý má zostať
-                nažive. Konštelácia prestane byť prázdna.
+                Email and password. Then an HTTP GET on an endpoint that has to
+                stay up. The constellation won&apos;t be empty anymore.
               </p>
             </div>
             <AuthCard />
@@ -401,12 +402,12 @@ export function LandingPage() {
             PulseWatch
           </p>
           <p className="max-w-[46ch] text-[14px] text-muted-foreground">
-            Monitoring dostupnosti, SSL a k6 záťaže. GraphQL API.{" "}
+            Uptime, SSL, and k6 load monitoring. GraphQL API.{" "}
             <Link
               href="/login"
               className="text-foreground underline-offset-4 hover:underline"
             >
-              Prihlásenie
+              Sign in
             </Link>
           </p>
         </div>

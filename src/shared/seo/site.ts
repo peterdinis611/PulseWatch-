@@ -8,26 +8,26 @@ export function getSiteUrl() {
 export const SITE_NAME = "PulseWatch";
 
 export const SITE_TITLE =
-  "PulseWatch — monitoring HTTP, databáz, SSL a k6 záťažových testov";
+  "PulseWatch — monitoring for HTTP, databases, SSL, and k6 load tests";
 
 export const SITE_DESCRIPTION =
-  "PulseWatch stráži, či tvoje služby bežia. Kontroluje HTTP, Redis, databázy, TCP, SSL, DNS, SMTP, Kafka a gRPC. Keď niečo spadne, dostaneš upozornenie. Záťaž otestuješ cez k6.";
+  "PulseWatch keeps an eye on your services. It checks HTTP, Redis, databases, TCP, SSL, DNS, SMTP, Kafka, and gRPC. When something goes down, you get an alert. Test load with k6.";
 
 export const SITE_KEYWORDS = [
   "PulseWatch",
-  "monitoring služieb",
+  "service monitoring",
   "uptime monitoring",
   "HTTP monitoring",
-  "SSL certifikát monitoring",
+  "SSL certificate monitoring",
   "Redis monitoring",
-  "databázový monitoring",
+  "database monitoring",
   "DNS monitoring",
   "SMTP monitoring",
   "Kafka monitoring",
   "gRPC health check",
-  "k6 záťažový test",
+  "k6 load test",
   "load testing",
-  "upozornenia downtime",
+  "downtime alerts",
   "GraphQL monitoring",
-  "sledovanie dostupnosti",
+  "availability monitoring",
 ];

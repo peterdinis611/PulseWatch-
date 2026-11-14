@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const alt =
-  "PulseWatch — monitoring služieb, SSL certifikátov a k6 záťažových testov";
+  "PulseWatch — monitoring for services, SSL certificates, and k6 load tests";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -49,8 +49,8 @@ export default function OpenGraphImage() {
             lineHeight: 1.35,
           }}
         >
-          Vidíš, či HTTP, databáza, Redis alebo certifikát ešte žijú. Skôr, ako
-          to napíše zákazník.
+          See whether your HTTP endpoint, database, Redis, or certificate is
+          still alive. Before a customer tells you.
         </div>
       </div>
     ),

@@ -28,7 +28,7 @@ export function QuickCheckPanel({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[13px] text-muted-foreground">
-            {draft ? "Rýchla kontrola" : "Kontrola"}
+            {draft ? "Quick check" : "Check"}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <StatusBadge value={result.status} />
@@ -38,7 +38,7 @@ export function QuickCheckPanel({
         </div>
         {draft ? (
           <p className="max-w-[28ch] text-sm text-muted-foreground">
-            Výsledok sa neukladá — ulož monitor, ak chceš novú konfiguráciu.
+            This result is not saved. Save the monitor to apply the new configuration.
           </p>
         ) : null}
       </div>

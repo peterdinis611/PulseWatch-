@@ -85,7 +85,7 @@ export function NotificationInbox() {
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);
-      toast.error("Označenie zlyhalo.", { description: message });
+      toast.error("Couldn't mark as read.", { description: message });
     }
   }
 
@@ -99,18 +99,18 @@ export function NotificationInbox() {
         })),
       );
       await refresh();
-      toast.success("Všetky prečítané.");
+      toast.success("All marked as read.");
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);
-      toast.error("Označenie zlyhalo.", { description: message });
+      toast.error("Couldn't mark as read.", { description: message });
     }
   }
 
   const label =
     unread > 0
-      ? `Upozornenia, ${unread} neprečítané`
-      : "Upozornenia";
+      ? `Notifications, ${unread} unread`
+      : "Notifications";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -137,10 +137,10 @@ export function NotificationInbox() {
         <header className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
           <div>
             <p className="font-heading text-lg font-black tracking-[-0.04em]">
-              Upozornenia
+              Notifications
             </p>
             <p className="mt-0.5 text-[13px] text-muted-foreground">
-              Čo flota povedala.
+              What your fleet is saying.
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
@@ -151,14 +151,14 @@ export function NotificationInbox() {
               disabled={unread === 0}
               onClick={markAll}
             >
-              Označiť prečítané
+              Mark all as read
             </Button>
             <Link
               href="/alerts"
               className="text-[13px] text-muted-foreground hover:text-foreground"
               onClick={() => setOpen(false)}
             >
-              Celá história →
+              Full history →
             </Link>
           </div>
         </header>
@@ -168,13 +168,13 @@ export function NotificationInbox() {
         <div className="max-h-[min(420px,60vh)] overflow-y-auto">
           {!loaded ? (
             <p className="px-4 py-8 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              Načítavam…
+              Loading…
             </p>
           ) : items.length === 0 ? (
             <div className="px-4 py-10">
-              <p className="font-heading text-2xl tracking-[-0.05em]">Ticho.</p>
+              <p className="font-heading text-2xl tracking-[-0.05em]">All quiet.</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Keď monitor padne alebo k6 skončí, príde to sem.
+                When a monitor goes down or a k6 run finishes, it will show up here.
               </p>
             </div>
           ) : (
@@ -249,7 +249,7 @@ export function NotificationInbox() {
                 router.push("/alerts");
               }}
             >
-              +{items.length - 12} ďalších →
+              +{items.length - 12} more →
             </button>
           </footer>
         ) : null}

@@ -30,6 +30,6 @@ describe("site copy", () => {
   it("includes PulseWatch keywords", () => {
     expect(SITE_NAME).toBe("PulseWatch");
     expect(SITE_KEYWORDS).toContain("uptime monitoring");
-    expect(SITE_KEYWORDS).toContain("k6 záťažový test");
+    expect(SITE_KEYWORDS).toContain("k6 load test");
   });
 });

@@ -14,9 +14,9 @@ import { cn } from "@/lib/utils";
 type Filter = "ALL" | IncidentStatus;
 
 const FILTERS: { id: Filter; label: string }[] = [
-  { id: "ALL", label: "Všetky" },
-  { id: "OPEN", label: "Otvorené" },
-  { id: "RESOLVED", label: "Vyriešené" },
+  { id: "ALL", label: "All" },
+  { id: "OPEN", label: "Open" },
+  { id: "RESOLVED", label: "Resolved" },
 ];
 
 export function formatDuration(from: string, to?: string | null, now = Date.now()) {
@@ -60,7 +60,7 @@ export function IncidentsPanel() {
   return (
     <section className={listPanelClass("animate-rise")}>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-4">
-        <div className="flex gap-2" role="radiogroup" aria-label="Stav incidentu">
+        <div className="flex gap-2" role="radiogroup" aria-label="Incident status">
           {FILTERS.map((f) => (
             <button
               key={f.id}
@@ -80,8 +80,8 @@ export function IncidentsPanel() {
           ))}
         </div>
         <p className={monoClass}>
-          {items.length} incidentov
-          {filter === "ALL" ? ` · ${openCount} otvorených` : ""}
+          {items.length} {items.length === 1 ? "incident" : "incidents"}
+          {filter === "ALL" ? ` · ${openCount} open` : ""}
         </p>
       </div>
 
@@ -91,15 +91,15 @@ export function IncidentsPanel() {
 
       {loading && !data ? (
         <p className="px-5 py-10 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
-          Načítavam…
+          Loading…
         </p>
       ) : items.length === 0 ? (
         <div className="px-5 py-14">
-          <p className="font-heading text-3xl tracking-[-0.05em]">Pokoj.</p>
+          <p className="font-heading text-3xl tracking-[-0.05em]">All clear.</p>
           <p className="mt-2 text-sm text-muted-foreground">
             {filter === "OPEN"
-              ? "Žiadny otvorený incident."
-              : "Keď monitor spadne, incident sa objaví tu."}
+              ? "No open incidents."
+              : "When a monitor goes down, its incident will appear here."}
           </p>
         </div>
       ) : (
@@ -142,17 +142,17 @@ function IncidentRow({ incident, now }: { incident: Incident; now: number }) {
       </div>
       <dl className="grid gap-0.5 text-left font-mono text-[12px] tabular-nums text-muted-foreground md:text-right">
         <div>
-          <dt className="sr-only">Trvanie</dt>
+          <dt className="sr-only">Duration</dt>
           <dd className={cn("text-[14px]", open ? "text-down" : "text-foreground")}>
             {formatDuration(incident.openedAt, incident.resolvedAt, now)}
           </dd>
         </div>
         <div title={formatWhen(incident.openedAt)}>
-          od {formatAgo(incident.openedAt)}
+          opened {formatAgo(incident.openedAt)}
         </div>
         {incident.resolvedAt ? (
           <div title={formatWhen(incident.resolvedAt)}>
-            vyriešené {formatAgo(incident.resolvedAt)}
+            resolved {formatAgo(incident.resolvedAt)}
           </div>
         ) : null}
       </dl>

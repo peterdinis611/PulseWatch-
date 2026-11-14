@@ -11,7 +11,7 @@ export async function generateMetadata({
   const { slug } = await params;
   return {
     title: `Status · ${slug}`,
-    description: `Aktuálny stav služieb – ${slug}.`,
+    description: `Current service status for ${slug}.`,
     alternates: { canonical: `/status/${slug}` },
   };
 }

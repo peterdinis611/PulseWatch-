@@ -16,12 +16,12 @@ const columnHelper = createColumnHelper<StressTest>();
 
 export const stressColumns = [
   columnHelper.accessor("lastStatus", {
-    header: "Stav",
+    header: "Status",
     cell: ({ getValue }) => <StatusBadge value={getValue()} />,
     enableSorting: true,
   }),
   columnHelper.accessor("name", {
-    header: "Scenár",
+    header: "Scenario",
     cell: ({ row }) => (
       <div className="min-w-0">
         <div className={nameClass}>{row.original.name}</div>
@@ -58,7 +58,7 @@ export const stressColumns = [
       (b.original.lastSummary?.p95Ms ?? -1),
   }),
   columnHelper.accessor("lastRunAt", {
-    header: "Beh",
+    header: "Last run",
     cell: ({ getValue }) => (
       <span className={cn(monoClass, "tabular-nums")}>
         {formatAgo(getValue())}

@@ -29,12 +29,11 @@ export default function LoadPage() {
   return (
     <>
       <PageHeader
-        kicker="Záťaž"
-        title="k6 na požiadanie."
-        lede="Beh sa vráti hneď ako RUNNING. Výsledky prídu, keď k6 dopíše summary."
+        title="Load tests"
+        lede="Run k6 scenarios on demand. A run appears as RUNNING immediately; results land when the summary is ready."
         actions={
           <Button asChild size="lg">
-            <Link href="/load/new">Nový scenár</Link>
+            <Link href="/load/new">New scenario</Link>
           </Button>
         }
       />
@@ -51,11 +50,11 @@ export default function LoadPage() {
             <AlertTriangle className="mt-0.5 size-5 shrink-0 text-down" aria-hidden />
             <div className="min-w-0 flex-1">
               <p className="font-heading text-lg tracking-[-0.04em] text-down">
-                k6 nie je nainštalovaný na API hoste
+                k6 is not installed on the API host
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {k6Message ??
-                  "Nainštaluj k6 na serveri, kde beží backend, alebo nastav K6_BIN v .env."}
+                  "Install k6 on the server running the backend, or set K6_BIN in .env."}
               </p>
               <p className={`${monoClass} mt-2`}>
                 <a
@@ -64,7 +63,7 @@ export default function LoadPage() {
                   rel="noreferrer"
                   className="text-primary underline-offset-4 hover:underline"
                 >
-                  Inštalácia k6 →
+                  Install k6 →
                 </a>
               </p>
             </div>
@@ -74,14 +73,14 @@ export default function LoadPage() {
 
       {data && tests.length === 0 ? (
         <EmptyState
-          title="Žiadna záťaž."
+          title="No load tests yet."
           action={
             <Button asChild size="lg" disabled={!k6Installed}>
-              <Link href="/load/new">Vytvoriť scenár</Link>
+              <Link href="/load/new">Create scenario</Link>
             </Button>
           }
         >
-          Namiň VUs na /health a uvidíš p95 a fail rate.
+          Spin up VUs against /health to see p95 and fail rate.
         </EmptyState>
       ) : (
         <section className={listPanelClass("animate-rise")}>
@@ -91,7 +90,7 @@ export default function LoadPage() {
             getRowHref={(test) => `/load/${test.id}`}
             getRowId={(test) => test.id}
             animateRows
-            emptyMessage="Žiadne scenáre."
+            emptyMessage="No scenarios."
           />
         </section>
       )}

@@ -12,16 +12,16 @@ export default function AppNotFound() {
   return (
     <HttpErrorPage
       code="404"
-      kicker="Stratený signál"
-      title="Táto stránka neexistuje."
-      description="Monitor alebo scenár na tejto adrese sa nenašiel. Skús prehľad, alebo choď späť do zoznamu."
+      kicker="Signal not found"
+      title="This page doesn't exist."
+      description="No monitor or scenario was found at this address. Try the overview, or go back to the list."
       actions={
         <>
           <Button asChild size="lg">
-            <Link href="/overview">Prehľad</Link>
+            <Link href="/overview">Overview</Link>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <Link href="/monitors">Monitory</Link>
+            <Link href="/monitors">Monitors</Link>
           </Button>
         </>
       }

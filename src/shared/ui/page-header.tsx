@@ -16,13 +16,13 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="animate-rise mb-8 grid items-end gap-5 md:grid-cols-[minmax(0,1.5fr)_auto]">
+    <header className="animate-rise mb-6 grid items-end gap-4 md:grid-cols-[minmax(0,1.5fr)_auto]">
       <div>
-        <h1 className="font-heading text-[clamp(28px,3.2vw,40px)] font-black tracking-[-0.045em]">
+        <h1 className="font-heading text-[clamp(26px,2.8vw,34px)] font-black tracking-[-0.045em]">
           {title}
         </h1>
         {lede ? (
-          <p className="mt-2 max-w-[44ch] text-[16px] text-muted-foreground">
+          <p className="mt-1.5 max-w-[48ch] text-[15px] text-muted-foreground">
             {lede}
           </p>
         ) : null}

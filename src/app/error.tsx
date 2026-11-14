@@ -19,19 +19,19 @@ export default function Error({
   return (
     <HttpErrorPage
       code="500"
-      kicker="Výpadok signálu"
-      title="Niečo sa pokazilo."
-      description="Server alebo klient narazil na chybu. Skús obnoviť stránku — ak problém pretrváva, vráť sa na prehľad."
+      kicker="Signal lost"
+      title="Something went wrong."
+      description="The server or client hit an error. Try reloading the page. If the problem persists, head back to the overview."
       actions={
         <>
           <Button size="lg" onClick={reset}>
-            Skúsiť znova
+            Try again
           </Button>
           <Button asChild variant="outline" size="lg">
-            <Link href="/overview">Prehľad</Link>
+            <Link href="/overview">Overview</Link>
           </Button>
           <Button asChild variant="ghost" size="lg">
-            <Link href="/">Domov</Link>
+            <Link href="/">Home</Link>
           </Button>
         </>
       }

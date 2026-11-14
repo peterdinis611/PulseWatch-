@@ -50,10 +50,10 @@ export function MonitorHistoryPanel({
       <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border px-5 py-4">
         <div>
           <p className="text-[13px] text-muted-foreground">
-            Posledných {periodLabel}
+            Last {periodLabel}
           </p>
           <h2 className="mt-0.5 font-heading text-[22px] font-black tracking-[-0.04em]">
-            História kontrol
+            Check history
           </h2>
         </div>
         <div className="flex flex-wrap items-end gap-5">
@@ -61,7 +61,7 @@ export function MonitorHistoryPanel({
             <div
               className="flex gap-3 border-b border-border"
               role="tablist"
-              aria-label="Okno histórie"
+              aria-label="History window"
             >
               {HISTORY_WINDOWS.map((window) => (
                 <button
@@ -112,13 +112,13 @@ export function MonitorHistoryPanel({
                 ) : null}
               </div>
               <div>
-                <dt className="text-muted-foreground">Kontroly</dt>
+                <dt className="text-muted-foreground">Checks</dt>
                 <dd className="mt-1 font-heading text-lg font-black tabular-nums text-foreground">
                   {uptime.upChecks}/{uptime.totalChecks}
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Priem. latencia</dt>
+                <dt className="text-muted-foreground">Avg. latency</dt>
                 <dd className="mt-1 font-heading text-lg font-black tabular-nums text-foreground">
                   {uptime.avgLatencyMs != null
                     ? formatMs(uptime.avgLatencyMs)
@@ -127,7 +127,7 @@ export function MonitorHistoryPanel({
               </div>
               {uptime.p95LatencyMs != null ? (
                 <div>
-                  <dt className="text-muted-foreground">p95 latencia</dt>
+                  <dt className="text-muted-foreground">p95 latency</dt>
                   <dd className="mt-1 font-heading text-lg font-black tabular-nums text-foreground">
                     {formatMs(uptime.p95LatencyMs)}
                   </dd>
@@ -140,8 +140,8 @@ export function MonitorHistoryPanel({
 
       {points.length === 0 ? (
         <p className="px-5 py-10 text-sm text-muted-foreground">
-          Zatiaľ žiadna história. Po prvej uloženej kontrole sa tu objaví graf
-          latencie a stavov.
+          No history yet. Once the first check is recorded, the latency chart
+          and status timeline will appear here.
         </p>
       ) : (
         <div className="px-5 py-5">
@@ -246,7 +246,7 @@ function LatencyChart({
     <div className="relative">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-[13px] font-medium text-muted-foreground">
-          Latencia
+          Latency
         </p>
         <div className="flex flex-wrap items-center gap-3 text-[12px] text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
@@ -271,7 +271,7 @@ function LatencyChart({
           viewBox={`0 0 ${width} ${height}`}
           className="h-[220px] w-full min-w-[360px] touch-pan-y"
           role="img"
-          aria-label={`Graf latencie za posledných ${periodLabel}`}
+          aria-label={`Latency chart for the last ${periodLabel}`}
           onMouseLeave={() => setActive(null)}
           onMouseMove={(event) => {
             const rect = event.currentTarget.getBoundingClientRect();
@@ -437,7 +437,7 @@ function StatusTimeline({ checks }: { checks: MonitorCheck[] }) {
     <div className="mt-5">
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2 text-[12px] text-muted-foreground">
         <p>
-          Stavový pás · {checks.length} kontrol
+          Status timeline · {checks.length} {checks.length === 1 ? "check" : "checks"}
           {downCount > 0 ? (
             <>
               {" "}
@@ -451,7 +451,7 @@ function StatusTimeline({ checks }: { checks: MonitorCheck[] }) {
             {formatMs(active.latencyMs)}
           </p>
         ) : (
-          <p>Najstaršia ← → najnovšia</p>
+          <p>Oldest ← → newest</p>
         )}
       </div>
       <div
@@ -497,7 +497,7 @@ function shortTime(value: string | null | undefined): string {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("sk-SK", {
+  return new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);

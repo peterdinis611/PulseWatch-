@@ -43,10 +43,10 @@ export function HttpErrorPage({
           {actions ?? (
             <>
               <Button asChild size="lg">
-                <Link href="/">Domov</Link>
+                <Link href="/">Home</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link href="/login">Prihlásenie</Link>
+                <Link href="/login">Sign in</Link>
               </Button>
             </>
           )}

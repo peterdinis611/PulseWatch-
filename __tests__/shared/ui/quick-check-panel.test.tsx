@@ -16,11 +16,11 @@ describe("QuickCheckPanel", () => {
       />,
     );
 
-    expect(screen.getByText("Rýchla kontrola")).toBeInTheDocument();
+    expect(screen.getByText("Quick check")).toBeInTheDocument();
     expect(screen.getByText("UP")).toBeInTheDocument();
     expect(screen.getByText("128 ms")).toBeInTheDocument();
     expect(
-      screen.getByText(/výsledok sa neukladá/i),
+      screen.getByText(/this result is not saved/i),
     ).toBeInTheDocument();
   });
 });

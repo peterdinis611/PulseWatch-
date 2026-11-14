@@ -19,16 +19,16 @@ export default function AppError({
   return (
     <HttpErrorPage
       code="500"
-      kicker="Výpadok signálu"
-      title="Niečo sa pokazilo."
-      description="Táto obrazovka spadla. Skús obnoviť — ak problém pretrváva, vráť sa na prehľad."
+      kicker="Signal lost"
+      title="Something went wrong."
+      description="This screen crashed. Try again. If the problem persists, head back to the overview."
       actions={
         <>
           <Button size="lg" onClick={reset}>
-            Skúsiť znova
+            Try again
           </Button>
           <Button asChild variant="outline" size="lg">
-            <Link href="/overview">Prehľad</Link>
+            <Link href="/overview">Overview</Link>
           </Button>
         </>
       }

@@ -45,7 +45,7 @@ export function StressForm({
   return (
     <form onSubmit={handleSubmit}>
       <FormError>{error}</FormError>
-      <FormField label="Názov">
+      <FormField label="Name">
         <Input
           required
           maxLength={120}
@@ -63,14 +63,14 @@ export function StressForm({
         />
       </FormField>
       <FormRow>
-        <FormField label="Metóda">
+        <FormField label="Method">
           <EnumSelect
             value={form.method}
             onChange={(value) => set("method", value)}
             options={STRESS_METHODS}
           />
         </FormField>
-        <FormField label="Očakávaný status">
+        <FormField label="Expected status">
           <Input
             required
             inputMode="numeric"
@@ -90,7 +90,7 @@ export function StressForm({
             className="h-9"
           />
         </FormField>
-        <FormField label="Trvanie s (5–120)">
+        <FormField label="Duration s (5–120)">
           <Input
             required
             inputMode="numeric"
@@ -123,10 +123,10 @@ export function StressForm({
         checked={form.scheduleEnabled}
         onCheckedChange={(value) => set("scheduleEnabled", value)}
       >
-        Plánovaný beh (cron/BullMQ)
+        Scheduled run (cron/BullMQ)
       </CheckRow>
       {form.scheduleEnabled ? (
-        <FormField label="Interval plánu s (300–86400)">
+        <FormField label="Schedule interval s (300–86400)">
           <Input
             required
             inputMode="numeric"
@@ -137,7 +137,7 @@ export function StressForm({
         </FormField>
       ) : null}
       <Button disabled={busy} type="submit" size="lg">
-        {busy ? "Ukladám…" : submitLabel}
+        {busy ? "Saving…" : submitLabel}
       </Button>
     </form>
   );

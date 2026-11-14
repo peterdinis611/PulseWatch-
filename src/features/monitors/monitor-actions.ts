@@ -45,7 +45,7 @@ export async function deleteMonitor(id: string): Promise<void> {
 
 export async function duplicateMonitor(monitor: Monitor): Promise<Monitor> {
   const form = monitorToForm(monitor);
-  form.name = `${monitor.name} (kópia)`;
+  form.name = `${monitor.name} (copy)`;
   const input = formToMonitorInput(form);
   const data = await gql<{ createMonitor: Monitor }>(CREATE_MONITOR, { input });
   return data.createMonitor;
@@ -73,10 +73,10 @@ export async function runBulk(
     }
   }
   if (fail === 0) {
-    toast.success(labels.ok, { description: `${ok} monitorov` });
+    toast.success(labels.ok, { description: `${ok} ${ok === 1 ? "monitor" : "monitors"}` });
   } else {
     toast.error(labels.fail, {
-      description: `OK ${ok} · zlyhalo ${fail}`,
+      description: `${ok} succeeded · ${fail} failed`,
     });
   }
   return { ok, fail };

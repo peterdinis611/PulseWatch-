@@ -10,9 +10,9 @@ export default function NotFound() {
   return (
     <HttpErrorPage
       code="404"
-      kicker="Stratený signál"
-      title="Táto stránka neexistuje."
-      description="URL nevedie na žiadny monitor ani scenár. Skontroluj adresu, alebo sa vráť na prehľad."
+      kicker="Signal not found"
+      title="This page doesn't exist."
+      description="This URL doesn't lead to any monitor or scenario. Check the address, or head back to the overview."
     />
   );
 }

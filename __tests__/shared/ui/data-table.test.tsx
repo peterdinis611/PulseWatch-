@@ -75,11 +75,11 @@ describe("DataTable", () => {
       <DataTable
         columns={monitorColumns}
         data={[]}
-        emptyMessage="Nič nesedí na filter."
+        emptyMessage="Nothing matches the filter."
       />,
     );
 
-    expect(screen.getByText("Nič nesedí na filter.")).toBeInTheDocument();
+    expect(screen.getByText("Nothing matches the filter.")).toBeInTheDocument();
   });
 
   it("sorts by latency when the ms header is clicked", async () => {

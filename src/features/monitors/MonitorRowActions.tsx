@@ -64,9 +64,9 @@ export function MonitorRowActions({
           variant="ghost"
           disabled={busy || !monitor.enabled}
           onClick={() =>
-            void wrap("Kontrola zlyhala.", async () => {
+            void wrap("Check failed.", async () => {
               const next = await runMonitorCheck(monitor.id);
-              toast.success(`Kontrola: ${next.lastStatus}`);
+              toast.success(`Check result: ${next.lastStatus}`);
             })
           }
         >
@@ -80,7 +80,7 @@ export function MonitorRowActions({
             size="icon-sm"
             variant="ghost"
             disabled={busy}
-            aria-label={`Akcie pre ${monitor.name}`}
+            aria-label={`Actions for ${monitor.name}`}
           >
             <MoreHorizontal />
           </Button>
@@ -89,9 +89,9 @@ export function MonitorRowActions({
           <DropdownMenuItem
             disabled={!monitor.enabled}
             onClick={() =>
-              void wrap("Kontrola zlyhala.", async () => {
+              void wrap("Check failed.", async () => {
                 const next = await runMonitorCheck(monitor.id);
-                toast.success(`Kontrola: ${next.lastStatus}`);
+                toast.success(`Check result: ${next.lastStatus}`);
               })
             }
           >
@@ -99,9 +99,9 @@ export function MonitorRowActions({
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() =>
-              void wrap("Zmena stavu zlyhala.", async () => {
+              void wrap("Status change failed.", async () => {
                 await setMonitorEnabled(monitor.id, !monitor.enabled);
-                toast.success(monitor.enabled ? "Pozastavený." : "Spustený.");
+                toast.success(monitor.enabled ? "Monitor paused." : "Monitor resumed.");
               })
             }
           >
@@ -109,10 +109,10 @@ export function MonitorRowActions({
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() =>
-              void wrap("Mute zlyhal.", async () => {
+              void wrap("Mute update failed.", async () => {
                 await setMonitorMuted(monitor.id, !monitor.alertsMuted);
                 toast.success(
-                  monitor.alertsMuted ? "Alerty zapnuté." : "Alerty stíšené.",
+                  monitor.alertsMuted ? "Alerts unmuted." : "Alerts muted.",
                 );
               })
             }
@@ -121,9 +121,9 @@ export function MonitorRowActions({
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() =>
-              void wrap("Duplikácia zlyhala.", async () => {
+              void wrap("Duplicate failed.", async () => {
                 const copy = await duplicateMonitor(monitor);
-                toast.success("Kópia vytvorená.");
+                toast.success("Monitor duplicated.");
                 router.push(routes.monitor(copy.id));
               })
             }
@@ -137,10 +137,10 @@ export function MonitorRowActions({
           <DropdownMenuItem
             variant="destructive"
             onClick={() => {
-              if (!window.confirm(`Zmazať „${monitor.name}“?`)) return;
-              void wrap("Zmazanie zlyhalo.", async () => {
+              if (!window.confirm(`Delete "${monitor.name}"?`)) return;
+              void wrap("Delete failed.", async () => {
                 await deleteMonitor(monitor.id);
-                toast.success("Monitor zmazaný.");
+                toast.success("Monitor deleted.");
               });
             }}
           >

@@ -3,9 +3,34 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Search, X } from "lucide-react";
+import {
+  ArrowRight,
+  BellOff,
+  CheckCircle2,
+  CircleHelp,
+  Filter,
+  ListFilter,
+  Pause,
+  Play,
+  RefreshCw,
+  Search,
+  Trash2,
+  X,
+  XCircle,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FleetBanner } from "@/features/monitors/FleetBanner";
 import { buildMonitorColumns } from "@/features/monitors/monitor-columns";
@@ -16,15 +41,11 @@ import {
   setMonitorEnabled,
   setMonitorMuted,
 } from "@/features/monitors/monitor-actions";
-import type { Monitor, MonitorStatus, MonitorType } from "@/shared/lib/types";
+import type { Monitor } from "@/shared/lib/types";
 import { MONITOR_TYPES } from "@/shared/lib/types";
 import { monitorsWith, routes } from "@/shared/lib/routes";
 import { DataTable } from "@/shared/ui/data-table";
-import {
-  listPanelClass,
-  listToolbarClass,
-  monoClass,
-} from "@/shared/ui/list";
+import { listToolbarClass } from "@/shared/ui/list";
 import { useSession } from "@/shared/session";
 import { cn } from "@/lib/utils";
 import { targetOf } from "@/shared/lib/format";
@@ -330,13 +351,13 @@ export function MonitorList({
       animateRows={variant !== "plain"}
       emptyMessage={
         filterable || variant === "fleet"
-          ? "Nič nesedí na filter."
-          : "Žiadne monitory."
+          ? "No monitors match your filters."
+          : "No monitors."
       }
       emptyAction={
         filtersActive ? (
           <Button type="button" variant="outline" size="sm" onClick={clearFilters}>
-            Vyčistiť filtre
+            Clear filters
           </Button>
         ) : null
       }
@@ -346,12 +367,12 @@ export function MonitorList({
 
   if (filterable || variant === "fleet") {
     return (
-      <section className={listPanelClass()}>
+      <Card className="gap-0 overflow-hidden py-0 ring-1 ring-foreground/10">
         <FleetBanner embedded />
-        <div className={listToolbarClass()}>
+        <div className={listToolbarClass("space-y-4")}>
           <div className="flex flex-wrap items-center gap-3">
             <label className="relative block min-w-[min(100%,280px)] flex-1">
-              <span className="sr-only">Hľadať monitor</span>
+              <span className="sr-only">Search monitors</span>
               <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 className="h-10 border-border bg-background pl-9"
@@ -361,12 +382,13 @@ export function MonitorList({
                   setQuery(value);
                   writeUrl({ q: value });
                 }}
-                placeholder="Hľadať názov, typ, URL…"
+                placeholder="Search name, type, URL…"
               />
             </label>
-            <p className={cn(monoClass, "shrink-0")}>
+            <Badge variant="outline" className="h-8 gap-1.5 font-mono tabular-nums">
+              <Filter className="size-3.5 text-muted-foreground" />
               {visible.length} / {monitors.length}
-            </p>
+            </Badge>
             {filtersActive ? (
               <Button
                 type="button"
@@ -376,12 +398,12 @@ export function MonitorList({
                 onClick={clearFilters}
               >
                 <X className="size-3.5" />
-                Vyčistiť
+                Clear
               </Button>
             ) : null}
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <div className="flex flex-wrap items-end gap-x-5 gap-y-3">
             <StatusFacets
               value={status}
               counts={counts}
@@ -391,9 +413,10 @@ export function MonitorList({
                 writeUrl({ status: next });
               }}
             />
-            <div className="flex flex-wrap items-center gap-3">
+            <Separator orientation="vertical" className="hidden h-10 sm:block" />
+            <div className="flex flex-wrap items-end gap-2.5">
               <FilterSelect
-                label="Typ"
+                label="Type"
                 value={monitorType}
                 onChange={(value) => {
                   const next = value as TypeFilter;
@@ -402,11 +425,11 @@ export function MonitorList({
                 }}
                 options={TYPE_FILTERS.map((option) => ({
                   value: option,
-                  label: option === "ALL" ? "Všetky typy" : option,
+                  label: option === "ALL" ? "All types" : option,
                 }))}
               />
               <FilterSelect
-                label="Beh"
+                label="State"
                 value={enabledFilter}
                 onChange={(value) => {
                   const next = value as EnabledFilter;
@@ -414,7 +437,7 @@ export function MonitorList({
                   writeUrl({ enabled: next });
                 }}
                 options={[
-                  { value: "ALL", label: "Všetky" },
+                  { value: "ALL", label: "All" },
                   {
                     value: "RUNNING",
                     label: `Running (${monitors.length - counts.paused})`,
@@ -423,7 +446,7 @@ export function MonitorList({
                 ]}
               />
               <FilterSelect
-                label="Alerty"
+                label="Alerts"
                 value={mutedFilter}
                 onChange={(value) => {
                   const next = value as MutedFilter;
@@ -431,21 +454,24 @@ export function MonitorList({
                   writeUrl({ muted: next });
                 }}
                 options={[
-                  { value: "ALL", label: "Všetky" },
-                  { value: "LIVE", label: `Live (${monitors.length - counts.muted})` },
+                  { value: "ALL", label: "All" },
+                  {
+                    value: "LIVE",
+                    label: `Live (${monitors.length - counts.muted})`,
+                  },
                   { value: "MUTED", label: `Muted (${counts.muted})` },
                 ]}
               />
               {groups.length > 0 ? (
                 <FilterSelect
-                  label="Skupina"
+                  label="Group"
                   value={groupFilter}
                   onChange={(value) => {
                     setGroupFilter(value);
                     writeUrl({ group: value });
                   }}
                   options={[
-                    { value: "ALL", label: "Všetky skupiny" },
+                    { value: "ALL", label: "All groups" },
                     ...groups.map((g) => ({ value: g, label: g })),
                   ]}
                 />
@@ -453,13 +479,14 @@ export function MonitorList({
               {tags.length > 0 ? (
                 <FilterSelect
                   label="Tag"
-                  value={tagFilter}
+                  value={tagFilter || "__all__"}
                   onChange={(value) => {
-                    setTagFilter(value);
-                    writeUrl({ tag: value });
+                    const next = value === "__all__" ? "" : value;
+                    setTagFilter(next);
+                    writeUrl({ tag: next });
                   }}
                   options={[
-                    { value: "", label: "Všetky tagy" },
+                    { value: "__all__", label: "All tags" },
                     ...tags.map((t) => ({ value: t, label: `#${t}` })),
                   ]}
                 />
@@ -467,95 +494,107 @@ export function MonitorList({
             </div>
           </div>
         </div>
-        {table}
+        <div className="min-w-0 overflow-x-auto">{table}</div>
         {selectedList.length > 0 ? (
           <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t border-border bg-card/95 px-4 py-3 backdrop-blur-sm md:px-5">
-            <p className="mr-2 text-[13px] text-muted-foreground">
-              Vybrané: {selectedList.length}
-            </p>
+            <Badge variant="secondary" className="mr-1 font-mono tabular-nums">
+              {selectedList.length} selected
+            </Badge>
             <Button
               type="button"
               size="sm"
               variant="outline"
+              className="gap-1.5"
               disabled={bulkBusy}
               onClick={() =>
                 void withBulk(() =>
                   runBulk(selectedList, runMonitorCheck, {
-                    ok: "Kontroly hotové.",
-                    fail: "Niektoré kontroly zlyhali.",
+                    ok: "Checks completed.",
+                    fail: "Some checks failed.",
                   }).then(() => undefined),
                 )
               }
             >
+              <RefreshCw className="size-3.5" />
               Check
             </Button>
             <Button
               type="button"
               size="sm"
               variant="outline"
+              className="gap-1.5"
               disabled={bulkBusy}
               onClick={() =>
                 void withBulk(() =>
                   runBulk(selectedList, (id) => setMonitorEnabled(id, false), {
-                    ok: "Pozastavené.",
-                    fail: "Pause zlyhal.",
+                    ok: "Monitors paused.",
+                    fail: "Pause failed.",
                   }).then(() => undefined),
                 )
               }
             >
+              <Pause className="size-3.5" />
               Pause
             </Button>
             <Button
               type="button"
               size="sm"
               variant="outline"
+              className="gap-1.5"
               disabled={bulkBusy}
               onClick={() =>
                 void withBulk(() =>
                   runBulk(selectedList, (id) => setMonitorEnabled(id, true), {
-                    ok: "Spustené.",
-                    fail: "Resume zlyhal.",
+                    ok: "Monitors resumed.",
+                    fail: "Resume failed.",
                   }).then(() => undefined),
                 )
               }
             >
+              <Play className="size-3.5" />
               Resume
             </Button>
             <Button
               type="button"
               size="sm"
               variant="outline"
+              className="gap-1.5"
               disabled={bulkBusy}
               onClick={() =>
                 void withBulk(() =>
                   runBulk(selectedList, (id) => setMonitorMuted(id, true), {
-                    ok: "Alerty stíšené.",
-                    fail: "Mute zlyhal.",
+                    ok: "Alerts muted.",
+                    fail: "Mute failed.",
                   }).then(() => undefined),
                 )
               }
             >
+              <BellOff className="size-3.5" />
               Mute
             </Button>
             <Button
               type="button"
               size="sm"
               variant="destructive"
+              className="gap-1.5"
               disabled={bulkBusy}
               onClick={() => {
                 if (
-                  !window.confirm(`Zmazať ${selectedList.length} monitorov?`)
+                  !window.confirm(
+                    `Delete ${selectedList.length} ${selectedList.length === 1 ? "monitor" : "monitors"}?`,
+                  )
                 ) {
                   return;
                 }
                 void withBulk(() =>
                   runBulk(selectedList, deleteMonitor, {
-                    ok: "Zmazané.",
-                    fail: "Zmazanie zlyhalo.",
+                    ok: "Monitors deleted.",
+                    fail: "Delete failed.",
                   }).then(() => undefined),
                 );
               }}
             >
+              <Trash2 className="size-3.5" />
               Delete
             </Button>
             <Button
@@ -565,22 +604,22 @@ export function MonitorList({
               disabled={bulkBusy}
               onClick={() => setSelectedIds(new Set())}
             >
-              Zrušiť výber
+              Clear selection
             </Button>
           </div>
         ) : null}
-      </section>
+      </Card>
     );
   }
 
   if (variant === "preview") {
     return (
-      <section className={listPanelClass("animate-rise")}>
+      <Card className="animate-rise gap-0 overflow-hidden py-0 ring-1 ring-foreground/10">
         <div className={listToolbarClass()}>
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <h2 className="font-heading text-[22px] font-black tracking-[-0.04em]">
-                {previewTitle ?? "Posledné kontroly"}
+                {previewTitle ?? "Recent checks"}
               </h2>
               {previewKicker ? (
                 <p className="mt-1 text-[13px] text-muted-foreground">
@@ -588,16 +627,16 @@ export function MonitorList({
                 </p>
               ) : null}
             </div>
-            <Link
-              href={showAllHref ?? routes.monitors}
-              className="text-[14px] text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
-            >
-              Všetky monitory →
-            </Link>
+            <Button asChild variant="ghost" size="sm" className="gap-1.5">
+              <Link href={showAllHref ?? routes.monitors}>
+                All monitors
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
           </div>
         </div>
-        {table}
-      </section>
+        <div className="min-w-0 overflow-x-auto">{table}</div>
+      </Card>
     );
   }
 
@@ -615,16 +654,28 @@ function StatusFacets({
   total: number;
   onChange: (value: StatusFilter) => void;
 }) {
-  const facets: { id: StatusFilter; label: string; count: number; tone?: string }[] = [
-    { id: "ALL", label: "All", count: total },
-    { id: "UP", label: "UP", count: counts.up, tone: "text-up" },
-    { id: "DOWN", label: "DOWN", count: counts.down, tone: "text-down" },
-    { id: "UNKNOWN", label: "?", count: counts.unknown },
+  const facets: {
+    id: StatusFilter;
+    label: string;
+    count: number;
+    tone?: string;
+    icon: typeof ListFilter;
+  }[] = [
+    { id: "ALL", label: "All", count: total, icon: ListFilter },
+    { id: "UP", label: "UP", count: counts.up, tone: "text-up", icon: CheckCircle2 },
+    { id: "DOWN", label: "DOWN", count: counts.down, tone: "text-down", icon: XCircle },
+    { id: "UNKNOWN", label: "?", count: counts.unknown, icon: CircleHelp },
   ];
 
   return (
-    <div role="radiogroup" aria-label="Stav" className="flex flex-wrap items-center gap-1">
-      <span className="mr-1 text-[13px] font-medium text-muted-foreground">Stav</span>
+    <div
+      role="radiogroup"
+      aria-label="Status"
+      className="flex flex-wrap items-center gap-1.5"
+    >
+      <span className="mr-0.5 text-[12px] font-medium tracking-wide text-muted-foreground uppercase">
+        Status
+      </span>
       <ToggleGroup
         type="single"
         value={value}
@@ -634,24 +685,33 @@ function StatusFacets({
         className="flex flex-wrap gap-1"
         variant="outline"
       >
-        {facets.map((facet) => (
-          <ToggleGroupItem
-            key={facet.id}
-            value={facet.id}
-            aria-label={facet.id}
-            className="h-8 gap-1.5 rounded-md px-2.5 text-[12px] tracking-wide data-[state=on]:border-foreground data-[state=on]:bg-foreground data-[state=on]:text-background"
-          >
-            <span>{facet.label}</span>
-            <span
-              className={cn(
-                "tabular-nums opacity-75",
-                value !== facet.id && facet.tone,
-              )}
+        {facets.map((facet) => {
+          const Icon = facet.icon;
+          return (
+            <ToggleGroupItem
+              key={facet.id}
+              value={facet.id}
+              aria-label={facet.id}
+              className="h-8 gap-1.5 rounded-md px-2.5 text-[12px] tracking-wide data-[state=on]:border-foreground data-[state=on]:bg-foreground data-[state=on]:text-background"
             >
-              {facet.count}
-            </span>
-          </ToggleGroupItem>
-        ))}
+              <Icon
+                className={cn(
+                  "size-3.5",
+                  value !== facet.id && facet.tone,
+                )}
+              />
+              <span>{facet.label}</span>
+              <span
+                className={cn(
+                  "font-mono tabular-nums opacity-75",
+                  value !== facet.id && facet.tone,
+                )}
+              >
+                {facet.count}
+              </span>
+            </ToggleGroupItem>
+          );
+        })}
       </ToggleGroup>
     </div>
   );
@@ -669,21 +729,35 @@ function FilterSelect({
   options: { value: string; label: string }[];
 }) {
   const id = `filter-${label.toLowerCase()}`;
+  const selected = options.find((option) => option.value === value);
+
   return (
-    <label className="grid gap-1.5 text-[13px] text-muted-foreground">
-      <span className="font-medium">{label}</span>
-      <select
-        id={id}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-9 min-w-[9.5rem] border border-border bg-background px-2.5 text-[13px] text-foreground outline-none transition-colors hover:border-foreground/40 focus-visible:border-foreground"
+    <div className="grid gap-1.5">
+      <Label
+        htmlFor={id}
+        className="text-[12px] font-medium tracking-wide text-muted-foreground uppercase"
       >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+        {label}
+      </Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger
+          id={id}
+          aria-label={label}
+          size="sm"
+          className="min-w-[9.5rem] border-border bg-background"
+        >
+          <SelectValue placeholder={label}>
+            {selected?.label ?? label}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent align="start">
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

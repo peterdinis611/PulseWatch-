@@ -127,12 +127,12 @@ export default function MonitorDetailPage() {
   }
 
   async function runSavedCheck() {
-    await wrap("Kontrola zlyhala.", async () => {
+    await wrap("Check failed.", async () => {
       const next = await runMonitorCheck(id);
       setMonitor(next);
       setQuickResult(null);
       await loadHistory(hours);
-      toast.success(`Kontrola: ${next.lastStatus}`);
+      toast.success(`Check result: ${next.lastStatus}`);
     });
   }
 
@@ -145,13 +145,13 @@ export default function MonitorDetailPage() {
         { id, input },
       );
       setQuickResult(data.quickMonitorCheck);
-      toast.success(`Rýchla kontrola: ${data.quickMonitorCheck.status}`, {
+      toast.success(`Quick check: ${data.quickMonitorCheck.status}`, {
         description: formatMs(data.quickMonitorCheck.latencyMs),
       });
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);
-      toast.error("Rýchla kontrola zlyhala.", { description: message });
+      toast.error("Quick check failed.", { description: message });
     } finally {
       setChecking(false);
     }
@@ -162,12 +162,12 @@ export default function MonitorDetailPage() {
     try {
       await deleteMonitor(id);
       await refresh();
-      toast.success("Monitor zmazaný.");
+      toast.success("Monitor deleted.");
       router.replace(routes.monitors);
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);
-      toast.error("Zmazanie zlyhalo.", { description: message });
+      toast.error("Delete failed.", { description: message });
       setBusy(false);
     }
   }
@@ -184,7 +184,7 @@ export default function MonitorDetailPage() {
 
   return (
     <>
-      <BackLink href={routes.monitors}>Späť na monitory</BackLink>
+      <BackLink href={routes.monitors}>Back to monitors</BackLink>
       <header className="mb-7 flex flex-col items-start justify-between gap-6 md:flex-row">
         <div>
           <p className={monoClass}>{monitor.type}</p>
@@ -195,7 +195,7 @@ export default function MonitorDetailPage() {
           <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
             {!monitor.enabled ? <span>paused</span> : null}
             {monitor.alertsMuted ? <span>muted</span> : null}
-            {monitor.groupName ? <span>skupina {monitor.groupName}</span> : null}
+            {monitor.groupName ? <span>group {monitor.groupName}</span> : null}
             {monitor.tags?.length
               ? monitor.tags.map((tag) => (
                   <span key={tag} className="text-primary">
@@ -203,7 +203,7 @@ export default function MonitorDetailPage() {
                   </span>
                 ))
               : null}
-            {monitor.showOnStatusPage ? <span>na status page</span> : null}
+            {monitor.showOnStatusPage ? <span>on status page</span> : null}
             <span>
               {formatMs(monitor.lastLatencyMs)} ·{" "}
               {formatAgo(monitor.lastCheckedAt)}
@@ -239,7 +239,7 @@ export default function MonitorDetailPage() {
             onClick={() => void runSavedCheck()}
             size="lg"
           >
-            {busy ? "Kontrolujem…" : "Check now"}
+            {busy ? "Checking…" : "Check now"}
           </Button>
           <Button
             variant="outline"
@@ -247,10 +247,10 @@ export default function MonitorDetailPage() {
             type="button"
             size="lg"
             onClick={() =>
-              void wrap("Zmena stavu zlyhala.", async () => {
+              void wrap("Status change failed.", async () => {
                 const next = await setMonitorEnabled(id, !monitor.enabled);
                 setMonitor(next);
-                toast.success(monitor.enabled ? "Pozastavený." : "Spustený.");
+                toast.success(monitor.enabled ? "Monitor paused." : "Monitor resumed.");
               })
             }
           >
@@ -262,11 +262,11 @@ export default function MonitorDetailPage() {
             type="button"
             size="lg"
             onClick={() =>
-              void wrap("Mute zlyhal.", async () => {
+              void wrap("Mute update failed.", async () => {
                 const next = await setMonitorMuted(id, !monitor.alertsMuted);
                 setMonitor(next);
                 toast.success(
-                  monitor.alertsMuted ? "Alerty zapnuté." : "Alerty stíšené.",
+                  monitor.alertsMuted ? "Alerts unmuted." : "Alerts muted.",
                 );
               })
             }
@@ -279,9 +279,9 @@ export default function MonitorDetailPage() {
             type="button"
             size="lg"
             onClick={() =>
-              void wrap("Duplikácia zlyhala.", async () => {
+              void wrap("Duplicate failed.", async () => {
                 const copy = await duplicateMonitor(monitor);
-                toast.success("Kópia vytvorená.");
+                toast.success("Monitor duplicated.");
                 router.push(routes.monitor(copy.id));
               })
             }
@@ -296,7 +296,7 @@ export default function MonitorDetailPage() {
               onClick={() => void remove()}
               size="lg"
             >
-              Naozaj zmazať
+              Confirm delete
             </Button>
           ) : (
             <Button
@@ -324,10 +324,10 @@ export default function MonitorDetailPage() {
         <div className="mb-6 border border-warn/40 bg-card px-4 py-3 text-[15px]">
           <p className="text-[13px] font-medium text-warn">Soft DOWN</p>
           <p className="mt-1 text-muted-foreground">
-            {monitor.consecutiveFailures} z {monitor.failureThreshold} zlyhaní
-            po sebe
-            {monitor.lastError ? ` · ${monitor.lastError}` : ""}. Alert až po
-            prahu.
+            {monitor.consecutiveFailures} of {monitor.failureThreshold}{" "}
+            consecutive failures
+            {monitor.lastError ? ` · ${monitor.lastError}` : ""}. An alert is
+            sent once the threshold is reached.
           </p>
         </div>
       ) : null}
@@ -344,20 +344,20 @@ export default function MonitorDetailPage() {
           const window = HISTORY_WINDOWS.find((item) => item.hours === next);
           if (window) setHours(window.hours);
         }}
-        className="mb-8"
+        className="mb-6"
       />
 
       {relatedAlerts.length > 0 ? (
-        <section className="mb-8 border border-border bg-card">
+        <section className="mb-6 border border-border bg-card">
           <header className="flex flex-wrap items-end justify-between gap-3 border-b border-border px-5 py-4">
             <h2 className="font-heading text-[20px] font-black tracking-[-0.04em]">
-              Súvisiace upozornenia
+              Related alerts
             </h2>
             <Link
               href={routes.alerts}
               className="text-[13px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
-              Všetky alerty →
+              All alerts →
             </Link>
           </header>
           <ul>
@@ -387,7 +387,7 @@ export default function MonitorDetailPage() {
         <MonitorForm
           key={monitor.updatedAt}
           initial={monitorToForm(monitor)}
-          submitLabel="Uložiť"
+          submitLabel="Save"
           busy={busy}
           checking={checking}
           error={null}
@@ -404,19 +404,20 @@ export default function MonitorDetailPage() {
               setMonitor(data.updateMonitor);
               setQuickResult(null);
               await refresh();
-              toast.success("Monitor uložený.");
+              toast.success("Monitor saved.");
             } catch (err) {
               const message = gqlMessage(err);
               setError(message);
-              toast.error("Uloženie zlyhalo.", { description: message });
+              toast.error("Save failed.", { description: message });
             } finally {
               setBusy(false);
             }
           }}
         />
         <aside className={noteClass}>
-          Rýchla kontrola otestuje hodnoty vo formulári bez uloženia. Check now
-          spustí check na uloženej konfigurácii a zapíše výsledok do histórie.
+          Quick check tests the values in the form without saving. Check now
+          runs a check against the saved configuration and records the result
+          in history.
         </aside>
       </div>
     </>

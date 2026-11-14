@@ -7,21 +7,21 @@ describe("HttpErrorPage", () => {
     render(
       <HttpErrorPage
         code="404"
-        kicker="Stratený signál"
-        title="Táto stránka neexistuje."
-        description="URL nevedie na žiadny monitor."
+        kicker="Signal not found"
+        title="This page doesn't exist."
+        description="This URL doesn't lead to any monitor."
       />,
     );
 
     expect(screen.getByText("404")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "Táto stránka neexistuje." }),
+      screen.getByRole("heading", { name: "This page doesn't exist." }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Domov" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute(
       "href",
       "/",
     );
-    expect(screen.getByRole("link", { name: "Prihlásenie" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute(
       "href",
       "/login",
     );
@@ -31,14 +31,14 @@ describe("HttpErrorPage", () => {
     render(
       <HttpErrorPage
         code="500"
-        kicker="Výpadok"
+        kicker="Outage"
         title="Chyba servera."
-        description="Skús znova."
-        actions={<button type="button">Skúsiť znova</button>}
+        description="Try again."
+        actions={<button type="button">Try again</button>}
       />,
     );
 
-    expect(screen.getByRole("button", { name: "Skúsiť znova" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Domov" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Home" })).not.toBeInTheDocument();
   });
 });

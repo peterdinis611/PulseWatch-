@@ -1,6 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import {
+  Activity,
+  AlertTriangle,
+  PauseCircle,
+  Settings,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { usePoll } from "@/shared/hooks/usePoll";
 import { gql } from "@/shared/graphql/client";
 import { FLEET_UPTIME_QUERY, SETTINGS_QUERY } from "@/shared/graphql/documents";
@@ -24,41 +33,72 @@ export function FleetBanner({ embedded = false }: { embedded?: boolean }) {
     settings?.maintenanceUntil != null &&
     Date.parse(settings.maintenanceUntil) > Date.now();
 
-  const uptimeLabel =
+  const uptimePercent =
     uptime && uptime.monitorCount > 0
-      ? `${uptime.avgUptimePercent.toFixed(1)}% · ${uptime.totalChecks} checks / 24h`
-      : "Uptime ešte nie je";
+      ? `${uptime.avgUptimePercent.toFixed(1)}%`
+      : null;
+  const checksLabel =
+    uptime && uptime.monitorCount > 0
+      ? `${uptime.totalChecks} checks / 24h`
+      : "No uptime data yet";
 
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-[14px] md:px-5",
+        "flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 md:px-5",
         embedded
           ? "border-b border-border bg-card"
-          : "animate-rise mb-6 border border-border bg-card",
+          : "animate-rise mb-6 rounded-xl border border-border bg-card",
       )}
     >
-      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <span className="font-heading text-[15px] font-black tracking-[-0.03em]">
-          Fleet 24h
+      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+        <span className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-background text-primary">
+          <Activity className="size-4" />
         </span>
-        <span className="tabular-nums text-muted-foreground">{uptimeLabel}</span>
+        <div className="min-w-0">
+          <p className="font-heading text-[14px] font-black tracking-[-0.03em]">
+            Fleet 24h
+          </p>
+          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[13px] text-muted-foreground">
+            {uptimePercent ? (
+              <>
+                <span className="font-mono tabular-nums text-up">
+                  {uptimePercent}
+                </span>
+                <Separator orientation="vertical" className="h-3" />
+                <span className="font-mono tabular-nums">{checksLabel}</span>
+              </>
+            ) : (
+              <span>{checksLabel}</span>
+            )}
+          </div>
+        </div>
         {settings?.fleetAlertsMuted ? (
-          <span className="text-warn">Alerty floty sú stíšené</span>
+          <Badge
+            variant="outline"
+            className="gap-1 border-warn/40 text-warn"
+          >
+            <PauseCircle className="size-3" />
+            Alerts muted
+          </Badge>
         ) : null}
         {maintenanceActive ? (
-          <span className="text-warn">
-            Maintenance do{" "}
-            {new Date(settings!.maintenanceUntil!).toLocaleString("sk-SK")}
-          </span>
+          <Badge
+            variant="outline"
+            className="gap-1 border-warn/40 text-warn"
+          >
+            <AlertTriangle className="size-3" />
+            Maintenance until{" "}
+            {new Date(settings!.maintenanceUntil!).toLocaleString("en-US")}
+          </Badge>
         ) : null}
       </div>
-      <Link
-        href={routes.settings}
-        className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-      >
-        Nastavenia →
-      </Link>
+      <Button asChild variant="ghost" size="sm" className="gap-1.5">
+        <Link href={routes.settings}>
+          <Settings className="size-3.5" />
+          Settings
+        </Link>
+      </Button>
     </div>
   );
 }

@@ -10,7 +10,7 @@ export function JsonLd() {
         "@id": `${origin}/#website`,
         url: origin,
         name: SITE_NAME,
-        inLanguage: "sk-SK",
+        inLanguage: "en-US",
         description: SITE_DESCRIPTION,
       },
       {
@@ -20,7 +20,7 @@ export function JsonLd() {
         url: origin,
         applicationCategory: "DeveloperApplication",
         operatingSystem: "Web",
-        inLanguage: "sk-SK",
+        inLanguage: "en-US",
         description: SITE_DESCRIPTION,
         offers: {
           "@type": "Offer",
@@ -30,15 +30,15 @@ export function JsonLd() {
         featureList: [
           "HTTP monitoring",
           "Redis monitoring",
-          "Databázový monitoring",
+          "Database monitoring",
           "TCP port check",
-          "SSL certifikát",
-          "DNS záznamy",
+          "SSL certificate monitoring",
+          "DNS record checks",
           "SMTP",
           "Kafka",
           "gRPC health",
-          "k6 záťažové testy",
-          "Upozornenia pri výpadku",
+          "k6 load tests",
+          "Downtime alerts",
         ],
       },
       {
@@ -47,34 +47,34 @@ export function JsonLd() {
         mainEntity: [
           {
             "@type": "Question",
-            name: "Čo PulseWatch robí?",
+            name: "What does PulseWatch do?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Pravidelne kontroluje, či tvoje služby odpovedajú. Keď prestanú, dostaneš upozornenie. Okrem toho vieš spustiť k6 záťažový test.",
+              text: "It regularly checks that your services respond. When they stop, you get an alert. You can also run a k6 load test.",
             },
           },
           {
             "@type": "Question",
-            name: "Aké služby viem sledovať?",
+            name: "What can I monitor?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "HTTP, Redis, databázu (Postgres, MySQL, SQLite), TCP port, SSL certifikát, DNS, SMTP, Kafka a gRPC.",
+              text: "HTTP, Redis, databases (Postgres, MySQL, SQLite), TCP ports, SSL certificates, DNS, SMTP, Kafka, and gRPC.",
             },
           },
           {
             "@type": "Question",
-            name: "Čo je záťažový test v PulseWatch?",
+            name: "What is a load test in PulseWatch?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Scenár v k6: nastavíš URL, počet virtuálnych používateľov a dĺžku. PulseWatch spustí test a ukáže p95 latenciu a fail rate.",
+              text: "A k6 scenario: set a URL, number of virtual users, and duration. PulseWatch runs the test and shows p95 latency and fail rate.",
             },
           },
           {
             "@type": "Question",
-            name: "Potrebujem účet?",
+            name: "Do I need an account?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Áno. Registrácia je zadarmo. Po prihlásení pridáš monitor a uvidíš stav v prehľade.",
+              text: "Yes. Sign-up is free. After you sign in, add a monitor and see its status in Overview.",
             },
           },
         ],

@@ -5,9 +5,9 @@ import { routes } from "@/shared/lib/routes";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Prihlásenie a registrácia",
+  title: "Sign in or create an account",
   description:
-    "Prihlás sa do PulseWatch alebo si vytvor účet a začni sledovať HTTP, databázy, SSL a k6 záťaž.",
+    "Sign in to PulseWatch or create an account and start monitoring HTTP, databases, SSL, and k6 load tests.",
   alternates: { canonical: routes.login },
   robots: { index: true, follow: true },
 };
@@ -21,15 +21,15 @@ export default function LoginPage() {
           href={routes.home}
           className="text-[14px] text-muted-foreground hover:text-foreground"
         >
-          ← Späť na vysvetlenie
+          ← Back to overview
         </Link>
         <h1 className="mt-8 font-heading text-[clamp(40px,7vw,72px)] font-black leading-[0.9] tracking-[-0.05em]">
-          Vstúp do
-          <span className="mt-2 block text-primary">prehľadu.</span>
+          Step into
+          <span className="mt-2 block text-primary">Overview.</span>
         </h1>
         <p className="mt-5 max-w-[32ch] text-[18px] text-muted-foreground">
-          Účet je zadarmo. Po prihlásení pridáš monitor a uvidíš, čo je hore.
-          Alebo skús demo účet jedným klikom.
+          The account is free. After you sign in, add a monitor and see what&apos;s
+          up. Or try the demo account in one click.
         </p>
       </div>
       <AuthCard defaultMode="login" />

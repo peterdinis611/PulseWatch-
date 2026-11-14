@@ -56,7 +56,7 @@ export function AuthCard({
       const message = gqlMessage(err);
       setError(message);
       toast.error(
-        mode === "login" ? "Prihlásenie zlyhalo." : "Registrácia zlyhala.",
+        mode === "login" ? "Sign-in failed." : "Sign-up failed.",
         { description: message },
       );
     } finally {
@@ -82,14 +82,14 @@ export function AuthCard({
         { auth: false },
       );
       await completeLogin(data.login.accessToken);
-      toast.success("Demo účet", {
-        description: "Si prihlásený ako demo@pulsewatch.dev.",
+      toast.success("Demo account", {
+        description: "You're signed in as demo@pulsewatch.dev.",
       });
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);
-      toast.error("Demo login zlyhal.", {
-        description: `${message} Spusti \`npm run prisma:seed\` v backende.`,
+      toast.error("Demo sign-in failed.", {
+        description: `${message} Run \`npm run prisma:seed\` in the backend.`,
       });
     } finally {
       setBusy(false);
@@ -101,12 +101,12 @@ export function AuthCard({
       <div
         className="mb-6 grid grid-cols-2 border-b border-border"
         role="tablist"
-        aria-label="Režim vstupu"
+        aria-label="Authentication mode"
       >
         {(
           [
-            ["register", "Registrácia"],
-            ["login", "Prihlásenie"],
+            ["register", "Sign up"],
+            ["login", "Sign in"],
           ] as const
         ).map(([value, label]) => (
           <button
@@ -131,18 +131,18 @@ export function AuthCard({
         ))}
       </div>
       <h2 className="mb-5 font-heading text-[26px] font-black tracking-[-0.04em]">
-        {mode === "register" ? "Vytvor si účet" : "Prihlás sa"}
+        {mode === "register" ? "Create your account" : "Sign in"}
       </h2>
       <form onSubmit={onSubmit}>
         <FormError>{error}</FormError>
         {mode === "register" ? (
-          <FormField label="Meno">
+          <FormField label="Name">
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoComplete="name"
               className="h-10 rounded-md"
-              placeholder="Ako ťa máme volať"
+              placeholder="What should we call you?"
             />
           </FormField>
         ) : null}
@@ -154,10 +154,10 @@ export function AuthCard({
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
             className="h-10 rounded-md"
-            placeholder="ty@firma.sk"
+            placeholder="you@company.com"
           />
         </FormField>
-        <FormField label={mode === "register" ? "Heslo (min. 8 znakov)" : "Heslo"}>
+        <FormField label={mode === "register" ? "Password (min. 8 characters)" : "Password"}>
           <Input
             required
             minLength={mode === "register" ? 8 : undefined}
@@ -172,10 +172,10 @@ export function AuthCard({
         </FormField>
         <Button disabled={busy} type="submit" className="mt-1 h-10 w-full">
           {busy
-            ? "Čakám…"
+            ? "Please wait…"
             : mode === "login"
-              ? "Vstúpiť do prehľadu"
-              : "Vytvoriť účet a začať"}
+              ? "Sign in"
+              : "Create account"}
         </Button>
         <Button
           type="button"
@@ -184,11 +184,11 @@ export function AuthCard({
           className="mt-2 h-10 w-full"
           onClick={onDemoLogin}
         >
-          Použiť demo účet
+          Use demo account
         </Button>
         <p className="mt-4 text-[14px] text-muted-foreground">
-          Demo: {DEMO_ACCOUNT.email} · Účet je zadarmo. Potom pridáš prvý HTTP
-          monitor na službu, ktorú chceš vidieť hore.
+          Demo: {DEMO_ACCOUNT.email} · The account is free. Then add your first
+          HTTP monitor for a service you want to keep up.
         </p>
       </form>
     </div>

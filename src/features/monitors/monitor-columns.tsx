@@ -49,7 +49,7 @@ export function buildMonitorColumns({
             <Checkbox
               checked={allSelected ? true : someSelected ? "indeterminate" : false}
               onCheckedChange={(value) => onToggleAll?.(value === true)}
-              aria-label="Vybrať všetky"
+              aria-label="Select all"
             />
           </div>
         ),
@@ -60,7 +60,7 @@ export function buildMonitorColumns({
               onCheckedChange={(value) =>
                 onToggle?.(row.original.id, value === true)
               }
-              aria-label={`Vybrať ${row.original.name}`}
+              aria-label={`Select ${row.original.name}`}
             />
           </div>
         ),
@@ -71,7 +71,7 @@ export function buildMonitorColumns({
 
   columns.push(
     columnHelper.accessor("lastStatus", {
-      header: "Stav",
+      header: "Status",
       cell: ({ getValue }) => <StatusBadge value={getValue()} />,
       enableSorting: true,
     }) as ColumnDef<Monitor>,
@@ -85,7 +85,9 @@ export function buildMonitorColumns({
           {row.original.groupName || row.original.tags?.length ? (
             <div className="mt-1 flex flex-wrap gap-x-2 text-[12px] text-muted-foreground">
               {row.original.groupName ? (
-                <span className="text-foreground/70">{row.original.groupName}</span>
+                <span className="text-foreground/70">
+                  {row.original.groupName}/
+                </span>
               ) : null}
               {(row.original.tags ?? []).map((tag) => (
                 <span key={tag}>#{tag}</span>
@@ -98,7 +100,7 @@ export function buildMonitorColumns({
     }) as ColumnDef<Monitor>,
     columnHelper.display({
       id: "target",
-      header: "Cieľ",
+      header: "Target",
       cell: ({ row }) => (
         <div
           className={cn(metaClass, "max-w-[min(360px,40vw)]")}
@@ -120,7 +122,7 @@ export function buildMonitorColumns({
         (a.original.lastLatencyMs ?? -1) - (b.original.lastLatencyMs ?? -1),
     }) as ColumnDef<Monitor>,
     columnHelper.accessor("lastCheckedAt", {
-      header: "Kontrola",
+      header: "Last check",
       cell: ({ getValue }) => (
         <span className={cn(monoClass, "tabular-nums")}>
           {formatAgo(getValue())}
@@ -143,7 +145,7 @@ export function buildMonitorColumns({
     columns.push(
       columnHelper.display({
         id: "actions",
-        header: () => <span className="sr-only">Akcie</span>,
+        header: () => <span className="sr-only">Actions</span>,
         cell: ({ row }) => (
           <MonitorRowActions
             monitor={row.original}

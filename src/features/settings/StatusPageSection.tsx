@@ -55,11 +55,11 @@ export function StatusPageSection() {
   }, []);
 
   const validation = useMemo(() => {
-    if (!slug.trim()) return "Slug je povinný.";
+    if (!slug.trim()) return "Slug is required.";
     if (!SLUG_RE.test(slug.trim())) {
-      return "Slug: malé písmená, čísla a pomlčky.";
+      return "Slug may contain only lowercase letters, numbers, and hyphens.";
     }
-    if (!title.trim()) return "Názov je povinný.";
+    if (!title.trim()) return "Title is required.";
     return null;
   }, [slug, title]);
 
@@ -89,11 +89,11 @@ export function StatusPageSection() {
         { input: { slug: slug.trim(), title: title.trim(), isPublic } },
       );
       apply(data.updateStatusPage);
-      toast.success("Status stránka uložená.");
+      toast.success("Status page saved.");
     } catch (err) {
       const message = gqlMessage(err);
       setError(message);
-      toast.error("Uloženie zlyhalo.", { description: message });
+      toast.error("Couldn't save status page.", { description: message });
     } finally {
       setBusy(false);
     }
@@ -113,11 +113,11 @@ export function StatusPageSection() {
     <section className={cn(listPanelClass(), "p-5 md:p-6")}>
       <header className="mb-5 border-b border-border pb-4">
         <h2 className="font-heading text-[20px] font-black tracking-[-0.04em]">
-          Status stránka
+          Status page
         </h2>
         <p className="mt-1 max-w-[52ch] text-[14px] text-muted-foreground">
-          Verejná stránka bez prihlásenia. Zobrazí monitory so zapnutým „Zobraziť
-          na status stránke“.
+          A public page that requires no sign-in. It lists monitors that have
+          &ldquo;Show on status page&rdquo; enabled.
         </p>
       </header>
       <form onSubmit={onSubmit}>
@@ -130,24 +130,24 @@ export function StatusPageSection() {
             className="mb-4"
             onClick={load}
           >
-            Skúsiť znova
+            Try again
           </Button>
         ) : null}
         <FormRow>
-          <FormField label="Slug" hint="Časť adresy /status/…">
+          <FormField label="Slug" hint="Part of the address: /status/…">
             <Input
               value={slug}
               onChange={(e) => setSlug(e.target.value.toLowerCase())}
-              placeholder="moja-firma"
+              placeholder="my-company"
               className="h-10"
             />
           </FormField>
-          <FormField label="Názov">
+          <FormField label="Title">
             <Input
               maxLength={120}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Moja firma"
+              placeholder="My Company"
               className="h-10"
             />
           </FormField>
@@ -155,19 +155,19 @@ export function StatusPageSection() {
         <CheckRow
           checked={isPublic}
           onCheckedChange={setIsPublic}
-          description="Vypnuté = stránka vráti „nie je dostupná“."
+          description="When off, the page returns “not available”."
         >
-          Stránka je verejná
+          Make page public
         </CheckRow>
 
         <div className="mb-4 mt-4 border border-border bg-background px-4 py-3">
           <p className="text-[13px] font-medium text-foreground">
-            Na stránke: {onPage.length}
+            On page: {onPage.length}
           </p>
           {onPage.length === 0 ? (
             <p className="mt-1 text-[13px] text-muted-foreground">
-              Žiadny monitor. Zapni „Zobraziť na status stránke“ v detaile
-              monitora.
+              No monitors yet. Turn on &ldquo;Show on status page&rdquo; in a
+              monitor&apos;s detail view.
             </p>
           ) : (
             <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
@@ -182,7 +182,7 @@ export function StatusPageSection() {
                 </li>
               ))}
               {onPage.length > 8 ? (
-                <li>+{onPage.length - 8} ďalších</li>
+                <li>+{onPage.length - 8} more</li>
               ) : null}
             </ul>
           )}
@@ -199,7 +199,7 @@ export function StatusPageSection() {
                 {publicUrl} ↗
               </Link>
             ) : (
-              <span>{publicUrl} (súkromná)</span>
+              <span>{publicUrl} (private)</span>
             )}
           </p>
         ) : null}
@@ -211,12 +211,12 @@ export function StatusPageSection() {
             disabled={busy || Boolean(validation) || (saved != null && !dirty)}
           >
             {busy
-              ? "Ukladám…"
+              ? "Saving…"
               : !saved
-                ? "Vytvoriť stránku"
+                ? "Create page"
                 : dirty
-                  ? "Uložiť stránku"
-                  : "Bez zmien"}
+                  ? "Save page"
+                  : "No changes"}
           </Button>
           {isPublic && (saved || slug.trim()) ? (
             <Button
@@ -225,10 +225,10 @@ export function StatusPageSection() {
               size="lg"
               onClick={() => {
                 void navigator.clipboard?.writeText(publicUrl);
-                toast.success("Odkaz skopírovaný.");
+                toast.success("Link copied.");
               }}
             >
-              Kopírovať odkaz
+              Copy link
             </Button>
           ) : null}
         </div>

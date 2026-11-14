@@ -19,15 +19,15 @@ export default function NewLoadPage() {
 
   return (
     <>
-      <BackLink href="/load">Späť na záťaž</BackLink>
+      <BackLink href="/load">Back to load</BackLink>
       <PageHeader
-        kicker="Nový scenár"
-        title="Nastaviť tlak."
-        lede="Len http/https. Jeden RUNNING beh naraz na scenár."
+        kicker="New scenario"
+        title="Set the pressure."
+        lede="http/https only. One RUNNING run at a time per scenario."
       />
       <div className={splitClass()}>
         <StressForm
-          submitLabel="Vytvoriť"
+          submitLabel="Create"
           busy={busy}
           error={error}
           onSubmit={async (input) => {
@@ -39,18 +39,18 @@ export default function NewLoadPage() {
                 { input },
               );
               await refresh();
-              toast.success("Scenár vytvorený.");
+              toast.success("Scenario created.");
               router.replace(`/load/${data.createStressTest.id}`);
             } catch (err) {
               const message = gqlMessage(err);
               setError(message);
-              toast.error("Vytvorenie zlyhalo.", { description: message });
+              toast.error("Failed to create the scenario.", { description: message });
               setBusy(false);
             }
           }}
         />
         <aside className={noteClass}>
-          k6 musí byť nainštalované na stroji, kde beží API.
+          k6 must be installed on the machine running the API.
         </aside>
       </div>
     </>

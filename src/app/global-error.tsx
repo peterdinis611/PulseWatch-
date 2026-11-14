@@ -8,7 +8,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   return (
-    <html lang="sk">
+    <html lang="en">
       <body
         style={{
           margin: 0,
@@ -29,7 +29,7 @@ export default function GlobalError({
               color: "#5a9bfc",
             }}
           >
-            Kritický výpadok
+            Critical failure
           </p>
           <p
             style={{
@@ -51,10 +51,10 @@ export default function GlobalError({
               fontWeight: 900,
             }}
           >
-            Aplikácia spadla.
+            The app crashed.
           </h1>
           <p style={{ margin: "16px 0 0", color: "#8891a1", fontSize: "18px" }}>
-            Root layout sa nepodarilo načítať. Skús obnoviť stránku.
+            The root layout failed to load. Try reloading the page.
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "32px" }}>
             <button
@@ -70,7 +70,7 @@ export default function GlobalError({
                 cursor: "pointer",
               }}
             >
-              Skúsiť znova
+              Try again
             </button>
             <a
               href="/"
@@ -82,7 +82,7 @@ export default function GlobalError({
                 textDecoration: "none",
               }}
             >
-              Domov
+              Home
             </a>
           </div>
           {error.digest ? (

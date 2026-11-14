@@ -25,16 +25,16 @@ export default function NewMonitorPage() {
 
   return (
     <>
-      <BackLink href="/monitors">Späť na monitory</BackLink>
+      <BackLink href="/monitors">Back to monitors</BackLink>
       <PageHeader
-        kicker="Nový monitor"
-        title="Pridať cieľ."
-        lede="Interval a timeout nechaj prázdne, ak stačia defaulty z nastavení."
+        kicker="New monitor"
+        title="Add a target."
+        lede="Leave interval and timeout empty to use the defaults from Settings."
       />
       {quickResult ? <QuickCheckPanel result={quickResult} draft /> : null}
       <div className={splitClass()}>
         <MonitorForm
-          submitLabel="Vytvoriť"
+          submitLabel="Create"
           busy={busy}
           checking={checking}
           error={error}
@@ -47,13 +47,13 @@ export default function NewMonitorPage() {
                 { input },
               );
               setQuickResult(data.probeMonitor);
-              toast.success(`Rýchla kontrola: ${data.probeMonitor.status}`, {
+              toast.success(`Quick check: ${data.probeMonitor.status}`, {
                 description: formatMs(data.probeMonitor.latencyMs),
               });
             } catch (err) {
               const message = gqlMessage(err);
               setError(message);
-              toast.error("Rýchla kontrola zlyhala.", { description: message });
+              toast.error("Quick check failed.", { description: message });
             } finally {
               setChecking(false);
             }
@@ -67,7 +67,7 @@ export default function NewMonitorPage() {
                 { input },
               );
               await refresh();
-              toast.success("Monitor vytvorený.");
+              toast.success("Monitor created.");
               sessionStorage.setItem(
                 "pw.highlightMonitor",
                 data.createMonitor.id,
@@ -76,13 +76,13 @@ export default function NewMonitorPage() {
             } catch (err) {
               const message = gqlMessage(err);
               setError(message);
-              toast.error("Vytvorenie zlyhalo.", { description: message });
+              toast.error("Create failed.", { description: message });
               setBusy(false);
             }
           }}
         />
         <aside className={noteClass}>
-          Rýchla kontrola otestuje URL alebo host ešte pred vytvorením monitora.
+          Quick check tests the URL or host before you create the monitor.
         </aside>
       </div>
     </>

@@ -4,37 +4,36 @@ import { describe, expect, it, vi } from "vitest";
 import { BackLink, EmptyState, PageHeader, TypeChips } from "@/shared/ui/page-header";
 
 describe("PageHeader", () => {
-  it("renders kicker, title and action", () => {
+  it("renders title, lede and action", () => {
     render(
       <PageHeader
-        kicker="Monitory"
-        title="Deväť typov."
-        lede="HTTP aj Redis."
-        actions={<button type="button">Nový</button>}
+        kicker="Monitors"
+        title="Nine types."
+        lede="HTTP and Redis."
+        actions={<button type="button">New</button>}
       />,
     );
-    expect(screen.getByText("Monitory")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Deväť typov." })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Nový" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Nine types." })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New" })).toBeInTheDocument();
   });
 });
 
 describe("EmptyState", () => {
   it("shows the quiet copy", () => {
     render(
-      <EmptyState title="Ticho.">
-        Keď monitor padne, príde to sem.
+      <EmptyState title="All quiet.">
+        When a monitor goes down, it will show up here.
       </EmptyState>,
     );
-    expect(screen.getByRole("heading", { name: "Ticho." })).toBeInTheDocument();
-    expect(screen.getByText(/keď monitor padne/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "All quiet." })).toBeInTheDocument();
+    expect(screen.getByText(/when a monitor goes down/i)).toBeInTheDocument();
   });
 });
 
 describe("BackLink", () => {
   it("links back with arrow label", () => {
-    render(<BackLink href="/monitors">Späť na monitory</BackLink>);
-    const link = screen.getByRole("link", { name: /späť na monitory/i });
+    render(<BackLink href="/monitors">Back to monitors</BackLink>);
+    const link = screen.getByRole("link", { name: /back to monitors/i });
     expect(link).toHaveAttribute("href", "/monitors");
   });
 });
@@ -46,7 +45,7 @@ describe("TypeChips", () => {
 
     render(
       <TypeChips
-        label="Stav"
+        label="Status"
         options={["ALL", "UP", "DOWN"]}
         value="ALL"
         onChange={onChange}

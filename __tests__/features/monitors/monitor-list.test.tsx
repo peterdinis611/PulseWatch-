@@ -51,7 +51,7 @@ describe("MonitorList", () => {
     const user = userEvent.setup();
 
     render(<MonitorList monitors={monitors} filterable />);
-    await user.selectOptions(screen.getByLabelText("Typ"), "REDIS");
+    await user.selectOptions(screen.getByLabelText("Type"), "REDIS");
 
     expect(screen.getByText("Redis")).toBeInTheDocument();
     expect(screen.queryByText("Pdf App")).not.toBeInTheDocument();
@@ -66,13 +66,13 @@ describe("MonitorList", () => {
     expect(screen.getByText("Redis")).toBeInTheDocument();
 
     await user.type(
-      screen.getAllByPlaceholderText(/hľadať názov/i)[0],
+      screen.getAllByPlaceholderText(/search name/i)[0],
       "redis",
     );
     expect(screen.queryByText("Pdf App")).not.toBeInTheDocument();
     expect(screen.getByText("Redis")).toBeInTheDocument();
 
-    await user.clear(screen.getAllByPlaceholderText(/hľadať názov/i)[0]);
+    await user.clear(screen.getAllByPlaceholderText(/search name/i)[0]);
     await user.click(screen.getByRole("radio", { name: "DOWN" }));
 
     expect(screen.getByText("Redis")).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe("MonitorList", () => {
     expect(screen.getByText("3 / 3")).toBeInTheDocument();
     expect(screen.getByTestId("fleet-banner")).toBeInTheDocument();
 
-    const status = screen.getByRole("radiogroup", { name: "Stav" });
+    const status = screen.getByRole("radiogroup", { name: "Status" });
     expect(within(status).getByRole("radio", { name: "ALL" })).toHaveTextContent("3");
     expect(within(status).getByRole("radio", { name: "UP" })).toHaveTextContent("1");
     expect(within(status).getByRole("radio", { name: "DOWN" })).toHaveTextContent("1");
@@ -98,12 +98,12 @@ describe("MonitorList", () => {
 
     render(<MonitorList monitors={monitors} filterable />);
     await user.type(
-      screen.getAllByPlaceholderText(/hľadať názov/i)[0],
-      "kafka-neexistuje",
+      screen.getAllByPlaceholderText(/search name/i)[0],
+      "kafka-does-not-exist",
     );
 
-    expect(screen.getByText("Nič nesedí na filter.")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /vyčistiť filtre/i }));
+    expect(screen.getByText("No monitors match your filters.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /clear filters/i }));
     expect(screen.getByText("Pdf App")).toBeInTheDocument();
   });
 
@@ -112,17 +112,17 @@ describe("MonitorList", () => {
       <MonitorList
         monitors={monitors.slice(0, 2)}
         variant="preview"
-        previewKicker="Na rade"
-        previewTitle="Posledné kontroly"
+        previewKicker="Up next"
+        previewTitle="Recent checks"
       />,
     );
 
-    expect(screen.getByText("Na rade")).toBeInTheDocument();
+    expect(screen.getByText("Up next")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "Posledné kontroly" }),
+      screen.getByRole("heading", { name: "Recent checks" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /všetky monitory/i }),
+      screen.getByRole("link", { name: /all monitors/i }),
     ).toHaveAttribute("href", "/monitors");
   });
 
@@ -131,10 +131,10 @@ describe("MonitorList", () => {
 
     render(<MonitorList monitors={monitors} filterable />);
     await user.type(
-      screen.getAllByPlaceholderText(/hľadať názov/i)[0],
-      "kafka-neexistuje",
+      screen.getAllByPlaceholderText(/search name/i)[0],
+      "kafka-does-not-exist",
     );
 
-    expect(screen.getByText("Nič nesedí na filter.")).toBeInTheDocument();
+    expect(screen.getByText("No monitors match your filters.")).toBeInTheDocument();
   });
 });
